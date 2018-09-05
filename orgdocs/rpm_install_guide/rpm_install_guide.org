@@ -1,0 +1,321 @@
+#+TITLE: GridDB RPM Install Guide
+
+#+STARTUP: showall
+#+STARTUP: logdone
+#+STARTUP: hidestars
+
+#+OPTIONS: author:nil timestamp:nil creator:nil 
+#+OPTIONS: ^:nil _:nil
+
+#+DRAWERS: NOTE
+
+[TABLE-OF-CONTENTS]
+
+#+STYLE: <STYLE type="text/css">
+#+STYLE: <!-
+#+STYLE: .break { page-break-before: always; }
+#+STYLE: -->
+#+STYLE: </STYLE>
+
+#+HTML: <DIV class="break"></DIV><BR>
+
+* Installating and Setting Up GridDB with RPM
+
+This section shows how to install GridDB on a single machine.
+
+** Confirming the Environment
+
+Confirm that OS is CentOS 6.X or 7.X.
+
+#+BEGIN_EXAMPLE
+$ lsb_release -id
+Distributor ID: CentOS
+Description:    CentOS release 6.7 (Final)
+#+END_EXAMPLE
+
+*[Note]*
+- Select the following option at the minimum for Package Group Selection while installing OS.
+  + Software Development WorkStation
+
+Make sure that the following is installed as a Java development environment.
+
+- Java JDK1.6 or later
+
+#+BEGIN_EXAMPLE
+$ java -version
+java version "1.7.0_79"
+Java(TM) SE Runtime Environment (build 1.7.0_79-b15)
+Java HotSpot(TM) 64-Bit Server VM (build 24.79-b02, mixed mode)
+#+END_EXAMPLE
+
+** Confirming Packages
+
+The following package is used to install a GridDB node, Java client, and commands.
+
+#+ATTR_HTML: border="2"  align="center"
+|------------------+--------------------------------------+-------------------------------------------------------------------|
+| Package name     | File name                           | Content                                                              |
+|------------------+--------------------------------------+-------------------------------------------------------------------|
+| griddb_nosql | griddb_nosql-X.X.X-linux.x86_64.rpm | Contains GridDB's node module, Java client, commands, etc. |
+|------------------+--------------------------------------+-------------------------------------------------------------------|
+
+*: X.X.X is the GridDB version 
+
+First, make sure that you have all the necessary RPM packages.
+Confirm the following files:
+
+#+BEGIN_EXAMPLE
+$ ls
+griddb_nosql-X.X.X-linux.x86_64.rpm
+#+END_EXAMPLE
+
+
+** Installing RPM package
+
+Switch to the root user and install the necessary RPM packages by the "rpm" command, as shown below.
+
+#+BEGIN_EXAMPLE
+$ su
+# rpm -ivh griddb_nosql-X.X.X-linux.x86_64.rpm
+Preparing...                ########################################### [100%]
+
+------------------------------------------------------------
+Information:
+  User gsadm and group gridstore have been registered.
+  GridDB uses new user and group.
+------------------------------------------------------------
+
+   1:griddb_nosql           ########################################### [100%]
+#+END_EXAMPLE
+
+After installing GridDB's node module, the following user and group are created.
+Use the user and group for running a node module and operational commands.
+
+#+ATTR_HTML: border="2"  align="center"
+|-----------+--------+--------------------|
+| Group     | User   | Home directory     |
+|-----------+--------+--------------------|
+| gridstore | gsadm  | /var/lib/gridstore |
+|-----------+--------+--------------------|
+
+*[NOTE]*
+- The password of the user "gsadm" has not been set. Please set the password by using OS command.
+
+For the user "gsadm," two environment variables are defined as below.
+
+#+ATTR_HTML: border="2"  align="center"
+|----------+------------------------+--------------------------------------|
+| Environment variable | Value                     | Meaning                                 |
+|----------+------------------------+--------------------------------------|
+| GS_HOME  | /var/lib/gridstore     | gsadm/GridDB home directory    |
+| GS_LOG   | /var/lib/gridstore/log | Event log file output directory |
+|----------+------------------------+--------------------------------------|
+
+*[Note]*
+- These environment variables are referenced by the operational commands. If you execute those commands as other than this user, you need to define the environment variables as above.
+
+
+** Confirmation After Installation
+
+Confirm the directory structure of the installed GridDB node.
+If installation completed normally, the following directories and files are created as well as necessary modules and commands.
+
+#+BEGIN_EXAMPLE
+/var/lib/gridstore/        # GridDB home directory
+     backup/               # Backup directory(unused)
+     conf/                 # Directory storing definition files
+         gs_cluster.json   # Cluster definition file
+         gs_node.json      # Node definition file
+         password          # User definition file
+     data/                 # Directory storing database files
+     log/                  # Directory storing event log files
+#+END_EXAMPLE
+
+Below is shown how to use commands for confirmation.
+
+First, confirm whether the following files exist.
+
+#+BEGIN_EXAMPLE
+$ ls /usr/griddb-X.X.X/*
+/usr/griddb-X.X.X/RPM-README.md
+
+/usr/griddb-X.X.X/3rd_party:
+3rd_party.md            apr              json-simple      picojson  slf4j
+activemq-cpp-library    BSD_License.txt  MessagePack      purewell  yield
+Apache_License-2.0.txt  ebb              MIT_License.txt  sha2
+
+/usr/griddb-X.X.X/bin:
+gridstore-X.X.X.jar       gs_joincluster   gs_startnode    log.py
+gridstore-conf-X.X.X.jar  gs_leavecluster  gs_stat         util.py
+gs_adduser                gs_passwd        gs_stopcluster
+gs_deluser                gsserver         gs_stopnode
+
+/usr/griddb-X.X.X/conf:
+gs_cluster.json  gs_node.json  password
+
+/usr/griddb-X.X.X/docs:
+manual  sample
+#+END_EXAMPLE
+
+Similarly, confirm whether the following files and directories exist.
+
+#+BEGIN_EXAMPLE
+$ ls /var/lib/gridstore/*
+/var/lib/gridstore/backup:
+
+/var/lib/gridstore/conf:
+gs_cluster.json  gs_node.json  password
+
+/var/lib/gridstore/data:
+
+/var/lib/gridstore/log:
+#+END_EXAMPLE
+
+Confirm the directory structure of the installed GridDB client libraries.
+If installation completed normally, the following files are created.
+
+#+BEGIN_EXAMPLE
+$ ls -l /usr/share/java/*gridstore*
+lrwxrwxrwx 1 gsadm gridstore 46 Apr 11 20:43 /usr/share/java/gridstore-conf.jar -> /usr/griddb-X.X.X/bin/gridstore-conf-X.X.X.jar
+lrwxrwxrwx 1 gsadm gridstore 41 Apr 11 20:43 /usr/share/java/gridstore.jar -> /usr/griddb-X.X.X/bin/gridstore-X.X.X.jar
+#+END_EXAMPLE
+
+If you start a GridDB node and then access and run the node from a client, the following files are created in the directories to store database files and event log files.
+
+[Database file]
+#+BEGIN_EXAMPLE
+/var/lib/gridstore/        # GridDB home directory
+     data/                 # Directory storing database files
+         gs_log_n_m.log    # File recording transaction logs (n, m: positive number)
+         gs_cp_n_p.dat     # Checkpoint file recording data regularly (n, p: positive number)
+#+END_EXAMPLE
+
+[Event log file]
+#+BEGIN_EXAMPLE
+/var/lib/gridstore/              # GridDB home directory
+     log/                        # Directory storing event logs
+         gridstore-%Y%m%d-n.log  # Event log file
+#+END_EXAMPLE
+
+You can change the directories to store files by editing the relevant parameters in the node definition file.
+
+** Setting up an administrator user (Mandatory)
+# <<setup_admin>>
+
+An administrator user is used for authentication purposes in nodes and clusters. Administrator user information is stored in the 
+*User definition file*. The default file is as shown below.
+- $GS_HOME/conf/password
+
+The following default users exist just after installation.
+
+#+ATTR_HTML: border="2" align="center"
+|--------+------------|
+| User   | Password   |
+|--------+------------|
+| admin  | No settings |
+|--------+------------|
+
+Administrator user information including the above-mentioned default users can be changed using the user administration command in the operating commands.
+
+#+ATTR_HTML: border="2"  align="center"
+|-------------------+-------------------------------------------|
+| Command          | Function                                   |
+|-------------------+-------------------------------------------|
+| gs_adduser        | Add an administrator user                 |
+| gs_deluser        | Delete an administrator user              |
+| gs_passwd         | Change the password of an administrator user  |
+|-------------------+-------------------------------------------|
+
+Change the password as shown below when using a default user.
+The password is encrypted during registration.
+
+*[Note]*
+- _Default user password has not been set. Be sure to change the password as the server will not start if the administrator user password is not set._
+
+#+BEGIN_EXAMPLE
+$ gs_passwd admin
+Password:（Input password）
+Retype password:（Input password again）
+#+END_EXAMPLE
+
+_When adding a new administrator user except a default user, the user name has to start with gs#._
+
+One or more ASCII alphanumeric characters and the underscore sign “_” can be used after gs#.
+
+An example on adding a new administrator user is shown below.
+
+#+BEGIN_EXAMPLE
+$ gs_adduser gs#newuser
+Password:（Input password）
+Retype password:（Input password again）
+#+END_EXAMPLE
+
+*[Note]*
+- _A change in the administrator user information using a user administration command becomes valid when a node is restarted._
+- User information is used for client authentication, _so the common user information must be registered in all nodes_. Make sure that the common user information is referred to by all nodes, by copying the user definition file.
+
+** Editing Definition Files
+
+There are two kinds of definition files for GridDB:
+
+- Cluster definition file
+- Node definition file
+
+The cluster definition file is a file which defines the setting values commonly used in the entire cluster.
+The node definition file is a file which defines different setting values for each node.
+
+Templates for these definition files are installed as shown below.
+You can create definition files for GridDB by copying and editing these templates.
+
+#+BEGIN_EXAMPLE
+/usr/griddb-X.X.X/     # Installation directory
+     conf/                # Directory storing definition files
+         gs_cluster.json  # Template for cluster definition file
+         gs_node.json     # Template for node definition file
+#+END_EXAMPLE
+
+Save an edited file with the predetermined name in the predetermined directory shown below.
+
+#+BEGIN_EXAMPLE
+/var/lib/gridstore/       # GridDB home directory
+     conf/                # Directory storing definition files
+         gs_cluster.json  # (Edited) Cluster definition file
+         gs_node.json     # (Edited) Node definition file
+#+END_EXAMPLE
+
+For details on definition files, refer to "2.3 Configure environment-dependent parameters." of "Quick Start Guide" (GridDB_QuickStartGuide.html)
+
+** Setting Up Libraries
+
+If you use a Java-based client, add the client library path to CLASSPATH.
+
+#+BEGIN_EXAMPLE
+$ export CLASSPATH=${CLASSPATH}:/usr/share/java/gridstore.jar
+#+END_EXAMPLE
+
+** Setting Up a Client
+
+There is no definition file for setting up a client.
+Specify the connection point and user/password in the client program.
+
+For details on the NoSQL specifications, refer to "GridDB API Reference" (GridDB_API_Reference.html)
+
+** Uninstalling GridDB
+
+If GridDB is no longer necessary, uninstall all the packages.
+Follow the uninstallation procedure shown below:
+
+#+BEGIN_EXAMPLE
+$ su
+# rpm -e griddb_nosql
+#+END_EXAMPLE
+
+* Trademark
+
+ - GridDB is a trademark of Toshiba Digital Solutions Corporation.
+ - Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ - Linux is a trademark of Linus Torvalds.
+ - Other product names are trademarks or registered trademarks of the respective owners.
+
+
+                            Copyright (C) 2017 TOSHIBA Digital Solutions Corporation

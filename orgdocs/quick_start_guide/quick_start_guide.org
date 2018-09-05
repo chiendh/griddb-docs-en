@@ -1,0 +1,2397 @@
+#+TITLE: GridDB Quick Start Guide
+ 
+#+STARTUP: showall
+#+STARTUP: logdone
+#+STARTUP: hidestars
+
+#+OPTIONS: author:nil timestamp:nil creator:nil 
+#+OPTIONS: ^:nil _:nil --:nil
+
+#+BIND: org-export-html-style-include-default nil
+#+BIND: org-export-html-style-include-scripts nil
+
+#+DRAWERS: NOTE
+
+# リビジョン
+#+HTML: <p class="revision">Revision: CE-20180525</p>
+
+# ここに目次を出力する
+[TABLE-OF-CONTENTS]
+
+#+STYLE: <meta http-equiv="X-UA-Compatible" content="IE=8">
+
+#+STYLE: <STYLE type="text/css">
+#+STYLE: html { font-family: Verdana, Meiryo, sans-serif; font-size: 10pt; }
+#+STYLE: h2 { border-left: 7px solid #00C; padding: 0 0 0 7px; }
+#+STYLE: h3 { border-left: 5px solid #00A; padding: 0 0 0 5px; }
+#+STYLE: h4 { border-left: 3px solid #008; padding: 0 0 0 3px; }
+#+STYLE: pre {
+#+STYLE:   font-family: courier, monospace;
+#+STYLE:   border: 1pt solid #AEBDCC;
+#+STYLE:   background-color: #F3F5F7;
+#+STYLE:   padding: 5pt;
+#+STYLE:   width:auto;
+#+STYLE:   overflow-x:auto;
+#+STYLE:   overflow-y:hidden;
+#+STYLE: }
+#+STYLE: code {
+#+STYLE:   margin: 0 2px;
+#+STYLE:   padding: 0 5px;
+#+STYLE:   white-space: nowrap;
+#+STYLE:   border: 1px solid #cacaea;
+#+STYLE:   background-color: #f0f0ff;
+#+STYLE:   border-radius: 3px;
+#+STYLE: }
+#+STYLE: a { text-decoration: none; color: #2233AA; }
+#+STYLE: a:visited { text-decoration: none; color: #2233AA; }
+#+STYLE: a:hover { text-decoration: underline; color: #2288FF; }
+#+STYLE: table {
+#+STYLE:   border-collapse: collapse;
+#+STYLE:   border-spacing: 0px;
+#+STYLE:   empty-cells: show;
+#+STYLE:   margin-bottom: 6px;
+#+STYLE: }
+#+STYLE: th, tr, td {
+#+STYLE:   vertical-align: top;
+#+STYLE:   padding: 5px;
+#+STYLE:   border-collapse: collapse;
+#+STYLE: }
+#+STYLE: tr > td:first-child {
+#+STYLE:   white-space: nowrap;
+#+STYLE: }
+#+STYLE: div.figure { padding: 0.5em; }
+#+STYLE: div.figure p { text-align: center; }
+#+STYLE: #table-of-contents {
+#+STYLE:   width: 23%;
+#+STYLE:   height: 100%;
+#+STYLE:   top: 0px;
+#+STYLE:   left: 0px;
+#+STYLE:   font-size: 70%;
+#+STYLE:   position: fixed;
+#+STYLE:   overflow: auto;
+#+STYLE: }
+#+STYLE: #table-of-contents ul {
+#+STYLE:   margin: 1pt 0 1pt 1.5em;
+#+STYLE:   padding: 0;
+#+STYLE:   list-style-type: none;
+#+STYLE: }
+#+STYLE: #table-of-contents li {
+#+STYLE:   margin: 1pt 0;
+#+STYLE: }
+#+STYLE: #content {
+#+STYLE:   width: 76%;
+#+STYLE:   float: right;
+#+STYLE: }
+#+STYLE: #postamble {
+#+STYLE:   display: none;
+#+STYLE: }
+#+STYLE: .revision {
+#+STYLE:   text-align: right;
+#+STYLE:   font-size: 8pt;
+#+STYLE: }
+#+STYLE: @media print {
+#+STYLE:   #table-of-contents {
+#+STYLE:     width:100%;
+#+STYLE:     font-size: 100%;
+#+STYLE:     position: static;
+#+STYLE:     overflow: visible;
+#+STYLE:   }
+#+STYLE:   #content {
+#+STYLE:     padding: 0px;
+#+STYLE:     width:100%;
+#+STYLE:     float: none;
+#+STYLE:   }
+#+STYLE: }
+#+STYLE: </STYLE>
+
+#+HTML: <DIV class="break"></DIV><BR>
+
+* Introduction
+
+** The Purpose and Structure of This Document
+
+_This document describes basic operational procedures for GridDB(TM)._
+
+This is intended for engineers working on system development using GridDB and administrators in charge of operations and maintenance of GridDB.
+
+This document contains the following:
+
+- [[#chap_system][System design and configuration]]
+  + Covers how to install and set up GridDB to make a basic environment.
+
+- [[#chap_operation][Operations]]
+  + Covers basic operations, such as starting and stopping GridDB, management operations while running GridDB, and essential actions to be taken in the event of a failure.
+
+
+** What is GridDB
+
+*** Overview
+
+GridDB is a distributed NoSQL database which manages a set of data (called Row), each consisting of a key and multiple values.
+#+BEGIN_COMMENT
+#GridDBには、NoSQL製品とNewSQL製品の２つの製品があります。両製品の相違点は、NewSQL製品が問い合わせ言語としてSQLをサポートするという点のみで、アプリケーション開発で利用するライブラリの違いはありますが、システムの構築や運用方法は同一です。
+#+END_COMMENT
+
+- GridDB performs in-memory data management, allowing high-speed processing.
+  + Provides fast update and search capabilities, by storing a set of Rows in memory.
+
+- GridDB can be scaled out to enlarge storage capacity, in spite of performing in-memory processing.
+  + Storage capacity can be enlarged by distributively storing data in multiple machines.  Additionally, data management can be combined with disk storage, which is not covered by this document.Accordingly, even in a single node, storage capacity can be enlarged irrespective of its memory size.
+
+- GridDB provides high availability.
+  + Can continue processing by using replicate data if a failure occurs in any node in a cluster storing replicate data.  Additionally, each node stores persistent data update information in its disk and can restore previous data in the event of a failure.
+
+- GridDB can be scaled out up to about 1,000 nodes.
+  + Provides high scalability by improving parallelism in a cluster, where each node performs per-Container transactions only.
+
+- GridDB requires no manual operations for managing a cluster.
+  + GridDB performs autonomous control of its cluster, where nodes communicate with one another using the distribution protocol.
+#+BEGIN_COMMENT
+#- GridDB supports atypical data used by the social infrastructure.
+#  + Supports atypical data, such as time-series data and spatial data, used by the social infrastructure.
+#+END_COMMENT
+- GridDB supports time-series data used by the social infrastructure.
+
+#+BEGIN_COMMENT
+#- GridDB NewSQL製品では、ODBC/JDBC I/Fをサポートしています。
+#+END_COMMENT
+
+
+*** Features
+
+#+BEGIN_COMMENT
+#Below, you can see the overview of the features of GridDB.
+#+END_COMMENT
+Below, you can see the overview of the features of GridDB(commnunity edition).
+
+#+BEGIN_COMMENT
+##+ATTR_HTML: border="2"  align="center"
+#|------------------------+------------------------------------------------------------------------------------------------|
+#| Requirements           | Description                                                                                           |
+#|------------------------+------------------------------------------------------------------------------------------------|
+#| *[Basic requirements]* |                                                                                                |
+#|------------------------+------------------------------------------------------------------------------------------------|
+#| Large capacity (in the order of petabytes) | Data storage utilizing the characteristics of in-memory storage and SSD in order to achieve both high-speed performance and large capacity.                      |
+#| High-speed (in-memory) performance         | In-memory processing                                                                                 |
+#| High scalability                           | Scalable up to more than 1,000 servers.                                                       |
+#| High availability                          | Availability can be improved by storing replicate data in multiple servers and using HDD in combination.                                        |
+#| High autonomy                              | Autonomous control on replicating data and balancing data layout. _オンラインでの サーバ増設を容易に可能_           |
+#| Functions for operations and maintenance   | Monitoring, security, backup, etc.                                                           |
+#|------------------------+------------------------------------------------------------------------------------------------|
+#| *[Requirements for social infrastructure]* |                                                                                                |
+#|------------------------+------------------------------------------------------------------------------------------------|
+#| Time-series data           | Time-series data</td><td>Also provides a data compression function for decreasing a data size without losing the characteristics of data.                                                   |
+#| Spatial data type           | Supports 2D and 3D data types and indexing for fast search.                                     |
+#| Guaranteed consistency           | Supports ACID transactions in a single Container.                                             |
+#|------------------------+------------------------------------------------------------------------------------------------|
+#+END_COMMENT
+#+ATTR_HTML: border="2"  align="center"
+|------------------------+------------------------------------------------------------------------------------------------|
+| Requirements           | Description                                                                                           |
+|------------------------+------------------------------------------------------------------------------------------------|
+| *[Basic requirements]* |                                                                                                |
+|------------------------+------------------------------------------------------------------------------------------------|
+| Large capacity (in the order of petabytes) | Data storage utilizing the characteristics of in-memory storage and SSD in order to achieve both high-speed performance and large capacity.                      |
+| High-speed (in-memory) performance         | In-memory processing                                                                                 |
+| High scalability                           | Scalable up to more than 1,000 servers.                                                       |
+| High availability                          | Availability can be improved by storing replicate data in multiple servers and using HDD in combination.                                        |
+| High autonomy                              | Autonomous control on replicating data and balancing data layout.                                                   |
+|------------------------+------------------------------------------------------------------------------------------------|
+| *[Requirements for social infrastructure]* |                                                                                                |
+|------------------------+------------------------------------------------------------------------------------------------|
+| Time-series data           | Provision of specialized timeseries containers                                                                 |
+| Guaranteed consistency           | Supports ACID transactions in a single Container.                                             |
+|------------------------+------------------------------------------------------------------------------------------------|
+
+
+** Description of Terms
+
+Below are descriptions of terms used to explain GridDB.
+
+#+ATTR_HTML: border="2"  align="center"
+|----------------------+-----------------------------------------------------------------------------------------------|
+| Terms                 | Meaning                                                                                          |
+|----------------------+-----------------------------------------------------------------------------------------------|
+| Node               | A server process which performs data management in GridDB.                               |
+| Cluster             | A node or a set of nodes which work together to perform data management.                     |
+| Partition       | A logical area for storing data, which is only prepared wthin GridDB and cannot be directly seen by users.   |
+| Row                 | A piece of data managed by GridDB, which is a unit of data consisting of a key and multiple values. |
+| Container             | A receptacle which stores a set of Rows. Two types are available: Collection and TimeSeries.            |
+| Collection         | A type of Container storing Rows with general type keys.                                        |
+| TimeSeries       | A type of Container storing Rows with time-type keys, provided with a special function to operate Rows with time-type keys.  |
+| Master node         | A node which controls clustering behaviours.                                                            |
+| Follower node       | A node other than a master node participating in a cluster.                                        |
+| Owner node         | A node holding a master Container among replicate Containers.                            |
+| Backup node   | A node holding a replica Container among replicate Containers.                          |
+|----------------------+-----------------------------------------------------------------------------------------------|
+
+
+* System Design and Configuration
+# <<chap_system>>
+
+This chapter shows a basic flow of system design and configuration.
+
+The design and construction of GridDB nodes and clusters is carried out according to the process below.
+
+1. [[#calc_resources][Make sure that required resources are available.]]
+2. [[#setup_node][Install and set up GridDB.(Node)]]
+3. [[#setup_params][Configure environment-dependent parameters.]]
+4. [[#tune-up_params][configure tuning parameters.]]
+5. [[#dist_conf][Distribute the definition file to each node]]
+
+Refer to the items below for the client settings.
+
+- [[#setup_client][Installing and Setting Up GridDB (Client)]]
+
+
+** Make sure that required resources are available.
+# <<calc_resources>>
+
+#+BEGIN_COMMENT
+#GridDB is a scalable database allowing non-distruptive operations 
+#+END_COMMENT
+GridDB is a scalable database 
+and requiring no deliberate system design and sizing, unlike conventional DBs. However, you should consider the following as a guide of initial system design.
+
+- Memory usage
+- Number of nodes constituting a cluster
+- Disk usage
+
+The following subsections show how to estimate the these factors.
+
+_The calculation of memory size shown below, however, take no account of the function of enlarging capacity using SSD or other external strage._
+#+BEGIN_COMMENT
+#_Please contact the service staff for an estimation based on the use of this function._
+#+END_COMMENT
+
+*** Total Memory Usage
+
+Here is shown how to estimate memory usage based on the predicted amount of data to be stored in Containers.
+
+First, predict the amount of data to be stored by your application. Predict the following size and quantity:
+
+- Data size of a Row
+- Number of Rows to be stored
+
+Next, estimate the memory usage required to store the predicted amount of data.
+
+- Memory usage = Row data size × Number of Rows ÷ 0.75 ＋ 8 × Number of Rows × (Number of indexes ＋ 2) ÷ 0.66 (bytes)
+
+Make an estimate for all Collections created and used by your application as well. The sum of both amounts is the memory usage for your GridDB cluster.
+
+- Total memory usage = Sum of memory usage for all Collections
+
+The estimated figure should be used only as a guide, because precise memory usage varies depending on the frequency of update.
+
+
+*** Number of Nodes Constituting a Cluster
+
+Here is shown how to estimate the number of nodes used by GridDB. The estimation below is based on the assumption that one node runs on one machine.
+
+First, assume the memory size for one machine.
+
+- Memory size per machine
+
+Next, assume the number of replicas to create. You can set the number of replicas as a parameter in GridDB.
+
+- Number of replicas
+
+The default value of the number of replicas is 2.
+
+- Number of nodes = (Total memory usage ÷ Memory size per machine) × Number of replicas
+
+The estimated figure should be used only as a guide, because larger number of nodes are preferrable in view of load balancing and higher availability.
+
+
+*** Disk Usage
+
+Here is shown how to estimate the size of files created by GridDB and then the disk space required for a machine running a node. Two kinds of files are created: a checkpoint file and a transaction log file.
+
+The memory usage in a single node can be calculated as below:
+
+- Memory usage per node = (Total memory usage × Number of replicas) ÷ Number of nodes (bytes)
+
+Based on the calculation above, estimate the size of a checkpoint file as below:
+
+- File size = Memory usage per node × 2 (bytes)
+
+
+And, since the size of a transaction log file varies depending on the frequency of update, predict the following:
+
+- Row update frequency (per second)
+
+Then, assume a checkpoint interval. You can set the checkpoint interval as a parameter in GridDB.
+
+- Checkpoint interval
+
+The default value of the checkpoint interval is 1200 seconds (20 minutes).
+
+Based on the calculation above, estimate the size of a transaction-log file size as below:
+
+- File size = Row data size × Row update frequency × Checkpoint interval (bytes)
+
+
+Estimate the disk space for a single node by summing up these calculated figures.
+
+- Disk usage per node = Transaction log file size ＋ Checkpoint file size
+
+
+
+** Install and set up GridDB.(Node)
+# <<setup_node>>
+
+This section shows how to install GridDB on a single machine. For information about clusterintg, see[[#chap_operation][Operations]].
+
+*** Confirming the Environment
+
+We have confirmed the operation on CentOS 6.7
+
+#+BEGIN_EXAMPLE
+$ lsb_release -id
+Distributor ID: CentOS
+Description:    CentOS release 6.7 (Final)
+#+END_EXAMPLE
+
+*[Note]*
+- Select the following option at the minimum for Package Group Selection while installing OS.
+  + Basic Server
+
+*** Installing a Node
+# <<install>>
+
+#+BEGIN_COMMENT
+#The following three packages are used to install a GridDB node.
+#インストールするマシンの任意の場所に配置してください。
+#
+##+ATTR_HTML: border="2"  align="center"
+#|------------------+--------------------------------------+-------------------------------------------------------------------|
+#| Package name     | File name                           | Content                                                              |
+#|------------------+--------------------------------------+-------------------------------------------------------------------|
+#| gridstore-server | gridstore-server-X.X.X-RH.x86_64.rpm | Contains GridDB's node module, a server start command, etc. |
+#| gridstore-client | gridstore-client-X.X.X-RH.x86_64.rpm | Contains commands for operations except starting a node.                    |
+#| gridstore-docs   | gridstore-docs-X.X.X-RH.x86_64.rpm   | Contains GridDB's manuals and sample programs.         |
+#|------------------+--------------------------------------+-------------------------------------------------------------------|
+#※: X.X.X is the version of GridDB.
+#
+#Switch to the root user and install the necessary RPM packages by the "rpm" command.
+#
+##+BEGIN_EXAMPLE
+#$ su
+## rpm -Uvh gridstore-server-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#User gsadm and group gridstore have been registered.
+#GridDB uses new user and group.
+#   1:gridstore-server       ########################################### [100%]
+## rpm -Uvh gridstore-client-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#User and group has already been registered correctly.
+#GridDB uses existing user and group.
+#   1:gridstore-client       ########################################### [100%]
+## rpm -Uvh gridstore-docs-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#   1:gridstore-docs         ########################################### [100%]
+##+END_EXAMPLE
+#
+#After installing the packages, the following user and group are created.
+#このOSユーザはGridDBを運用するためのユーザとして使用します。
+#
+##+ATTR_HTML: border="2"  align="center"
+#|-----------+--------+--------------------|
+#| Group  | User | Home directory |
+#|-----------+--------+--------------------|
+#| gridstore | gsadm  | /var/lib/gridstore |
+#|-----------+--------+--------------------|
+#
+#For the user "gsadm," two environment variables are defined as below.
+#
+##+ATTR_HTML: border="2"  align="center"
+#|----------+------------------------+--------------------------------------|
+#| Environment variable | Value                     | Meaning                                 |
+#|----------+------------------------+--------------------------------------|
+#| GS_HOME  | /var/lib/gridstore     | gsadm/GridDB home directory    |
+#| GS_LOG   | /var/lib/gridstore/log | Event log file output directory |
+#|----------+------------------------+--------------------------------------|
+#
+#*[Note]*
+#- These environment variables are referenced by the operational commands shown in the following subsections.
+#- _gsadmユーザのパスワードは設定されていません。_ OSのroot権限を用いて適宜設定してください。
+#  + 運用ツールの一部機能で必要となる場合があります。
+#
+#また、GridDBノードモジュールをインストールすると、OS起動とともに自動実行される
+#サービスが登録されます。
+#
+##+ATTR_HTML: border="2"  align="center"
+#|------------+----------------+
+#| service name | runlevel     |
+#|------------+----------------+
+#| gridstore  | 3,4,5          |
+#|------------+----------------+
+#
+#サービスの登録情報は、以下のコマンドで確認できます。
+#
+##+BEGIN_EXAMPLE
+## /sbin/chkconfig --list | grep gridstore
+#gridstore       0:off   1:off   2:off    3:on    4:on    5:on    6:off
+##+END_EXAMPLE
+#
+#このサービスによって、OS起動時にGridDBノードが自動起動します。
+#
+#*[Note]*
+# - インストール直後にサービスの自動起動は行いません。
+#
+#なお、サービスの自動起動を停止するには、以下のコマンドを用います。
+#
+##+BEGIN_EXAMPLE
+## /sbin/chkconfig gridstore off
+##+END_EXAMPLE
+#
+#サービスの詳細については、『GridDB 運用管理ガイド』([[file:GridDB_OperationGuide.html][GridDB_OperationGuide.html]])の
+#サービスの章を参照ください。
+#+END_COMMENT
+Download the GridDB source code package build to build the nodes and clusters.
+
+#+BEGIN_EXAMPLE
+$ git clone git://github.com/griddb/griddb.git
+$ cd griddb
+$ sh bootstrap.sh
+$ ./configure
+$ make
+$ export GS_HOME=$PWD
+$ export GS_LOG=$PWD/log
+#+END_EXAMPLE
+
+
+Two environment variables are defined as below.
+
+#+ATTR_HTML: border="2"  align="center"
+|----------+------------------------+--------------------------------------|
+| Environment variable | Value                     | Meaning                                 |
+|----------+------------------------+--------------------------------------|
+| GS_HOME  | Directory where source code file is decompressed     | GridDB home directory    |
+| GS_LOG   | $GS_HOME/log | Event log file output directory |
+|----------+------------------------+--------------------------------------|
+*[Note]*
+- These environment variables are referenced by the operational commands shown in the following subsections.
+
+*** Confirmation After Installation
+
+#Confirm the directory structure of the installed GridDB node.
+#
+#First, check that the GridDB home directory and related directory and files have been created.
+#
+#+BEGIN_COMMENT
+#*GridDB home directory*
+#
+##+BEGIN_EXAMPLE
+#/var/lib/gridstore/                      # GridDB home directory
+#                   admin/                # 統合運用管理GUIホームディレクトリ
+#                   backup/               # Backup directory
+#                   conf/                 # Directory storing definition files
+#                        gs_cluster.json  # Cluster definition file
+#                        gs_node.json     # Node definition file
+#                        password         # User definition file
+#                   data/                 # Directory storing database files
+#                   log/                  # Directory storing event log files
+##+END_EXAMPLE
+#
+#Below is shown how to use commands for confirmation.
+#
+##+BEGIN_EXAMPLE
+#$ ls /var/lib/gridstore/
+#admin  backup  conf  data  log
+##+END_EXAMPLE
+#
+#次に、インストールディレクトリが作成されていることを確認します。
+#
+#*Installation directory*
+#
+##+BEGIN_EXAMPLE
+#/usr/gridstore-X.X.X/              # Installation directory
+#                     Fixlist.pdf   # 修正記録
+#                     Readme.txt    # リリース説明書
+#                     bin/          # 運用コマンド、モジュールディレクトリ
+#                     conf/         # 定義ファイルの雛形ディレクトリ
+#                     docs/         # Document directory
+#                     etc/
+#                     lib/          # Library directory
+#                     license/      # ライセンスディレクトリ
+#                     prop/         # 設定ファイルディレクトリ
+#                     web/          # 統合運用管理GUIファイルディレクトリ
+##+END_EXAMPLE
+#
+#以下のコマンドで確認します。
+#
+##+BEGIN_EXAMPLE
+#$ ls /usr/gridstore-X.X.X/
+#Fixlist.pdf  Readme.txt  bin  conf  etc  lib  license  prop  web
+##+END_EXAMPLE
+#
+#ドキュメントはすべて1つのZIPファイルに圧縮しています。
+#下記のように、適宜解凍して参照ください。
+#
+##+BEGIN_EXAMPLE
+#$ cd /usr/gridstore-X.X.X/docs
+#$ unzip gridstore-documents-X.X.X.zip
+##+END_EXAMPLE
+#
+#また、利便性のため、インストールディレクトリの幾つかのディレクトリには
+#以下のようにシンボリックリンクが作成されます。
+#
+##+BEGIN_EXAMPLE
+#$ ls /usr/gridstore/
+#conf  lib  prop  web
+##+END_EXAMPLE
+#
+#最後に、インストールされたサーバモジュールのバージョンを以下のコマンドで確認します。
+#
+##+BEGIN_EXAMPLE
+#$ gsserver --version
+#GridDB version X.X.X build XXXXX
+##+END_EXAMPLE
+#
+#*補足*
+#
+#If you start a GridDB node by taking the steps shown later, the following files are created.
+#
+#[Database file]
+##+BEGIN_EXAMPLE
+#/var/lib/gridstore/                     # GridDB home directory
+#                   data/                # Directory storing database files
+#                        gs_log_n_m.log  # File recording transaction logs (n, m: positive number)
+#                        gs_cp_n_p.dat   # Checkpoint file recording data regularly (n, p: positive number)
+##+END_EXAMPLE
+#
+#[Event log file]
+##+BEGIN_EXAMPLE
+#/var/lib/gridstore/                            # GridDB home directory
+#                   log/                        # Directory storing event log files
+#                       gridstore-%Y%m%d-n.log  # Event log file
+#                       gs_XXXX.log             # 運用ツールログファイル
+##+END_EXAMPLE
+#
+#これらファイルの作成ディレクトリはノード定義ファイル中のパラメータ設定で変更できます。
+#
+#※: gs_XXXXは、運用ツール名です。(例：gs_startnode.log)
+#+END_COMMENT
+
+The file below is created when the installation is completed normally.
+#+BEGIN_EXAMPLE
+$GS_HOME/bin/gsserver
+#+END_EXAMPLE
+
+*Supplementary*
+
+If you start a GridDB node by taking the steps shown later, the following files are created.
+
+[Database file]
+#+BEGIN_EXAMPLE
+$GS_HOME                                # GridDB home directory
+                   data/                # Directory storing database files
+                        gs_log_n_m.log  # File recording transaction logs (n, m: positive number)
+                        gs_cp_n_p.dat   # Checkpoint file recording data regularly (n, p: positive number)
+#+END_EXAMPLE
+
+[Event log file]
+#+BEGIN_EXAMPLE
+$GS_HOME                                       # GridDB home directory
+                   log/                        # Directory storing event log files
+                       gridstore-%Y%m%d-n.log  # Event log file
+                       gs_XXXX.log             # Operating tool log file
+#+END_EXAMPLE
+
+You can change the directories to store files by editing the relevant parameters in the node definition file.
+
+#+BEGIN_COMMENT
+#*** Setting up an administrator user
+#+END_COMMENT
+*** Setting up an administrator user (Mandatory)
+# <<setup_admin>>
+
+An administrator user is used for authentication purposes in nodes and clusters. Administrator user information is stored in the 
+*User definition file*. The default file is as shown below.
+#+BEGIN_COMMENT
+#- /var/lib/gridstore/conf/password
+#+END_COMMENT
+- $GS_HOME/conf/password
+
+The following default users exist just after installation.
+
+#+BEGIN_COMMENT
+##+ATTR_HTML: border="2" align="center"
+#|--------+------------+--------------------------------------------------|
+#| User | Password | Usage                                     |
+#|--------+------------+--------------------------------------------------|
+#| admin  | admin      | Administrator user account for authentication of operational commands             |
+#| system | manager    | Application user account for authentication of client operations |
+#|--------+------------+--------------------------------------------------|
+#+END_COMMENT
+#+ATTR_HTML: border="2" align="center"
+|--------+------------|
+| User | Password |
+|--------+------------|
+| admin  | No settings      |
+|--------+------------|
+
+Administrator user information including the above-mentioned default users can be changed using the user administration command in the operating commands.
+
+#+ATTR_HTML: border="2"  align="center"
+|-------------------+-------------------------------------------|
+| Command          | Function                                      |
+|-------------------+-------------------------------------------|
+| gs_adduser        | Add an administrator user                      |
+| gs_deluser        | Delete an administrator user                      |
+| gs_passwd         | Change the password of an administrator user          |
+|-------------------+-------------------------------------------|
+
+Change the password as shown below when using a default user.
+The password is encrypted during registration.
+
+*[Note]*
+- _Default user password has not been set. Be sure to change the password as the server will not start if the administrator user password is not set._
+
+#+BEGIN_EXAMPLE
+$ gs_passwd admin
+Password:（Input password）
+Retype password:（Input password again）
+#+END_EXAMPLE
+
+_When adding a new administrator user except a default user, the user name has to start with gs#._
+
+One or more ASCII alphanumeric characters and the underscore sign “_” can be used after gs#.
+
+An example on adding a new administrator user is shown below.
+
+#+BEGIN_EXAMPLE
+$ gs_adduser gs#newuser
+Password:（Input password）
+Retype password:（Input password again）
+#+END_EXAMPLE
+
+*[Note]*
+#+BEGIN_COMMENT
+#- GridDBの管理ユーザは、インストール時に作成されるOSユーザgsadmとは異なります。
+#+END_COMMENT
+- _A change in the administrator user information using a user administration command becomes valid when a node is restarted._
+- User information is used for client authentication, _so the common user information must be registered in all nodes_. Make sure that the common user information is referred to by all nodes, by copying the user definition file.
+#+BEGIN_COMMENT
+#- 運用コマンドはgsadmユーザで実行してください。
+#+END_COMMENT
+
+#+BEGIN_COMMENT
+#*【メモ】*
+#- ユーザ管理コマンドの詳細は、『GridDB 運用管理ガイド』([[file:GridDB_OperationGuide.html][GridDB_OperationGuide.html]])を参照ください。
+#+END_COMMENT
+
+** Configure environment-dependent parameters.
+# <<setup_params>>
+
+After installation, configure the parameters required to run GridDB.
+
+1. Configuration of the network environment
+2. Configuration of the cluster name
+
+You can configure GridDB by editing the following definition files
+
+- Cluster definition file(gs_cluster.json)
+- Node definition file(gs_node.json)
+
+The cluster definition file is a file which defines the parameters commonly used in the entire cluster.
+
+The node definition file is a file which defines different parameters for each node.
+
+Templates for these definition files are installed as shown below.
+
+#+BEGIN_COMMENT
+##+BEGIN_EXAMPLE
+#/usr/gridstore/                     # Installation directory
+#
+#               conf/                # Directory storing definition files
+#                    gs_cluster.json # Template for cluster definition file
+#                    gs_node.json    # Template for node definition file
+##+END_EXAMPLE
+#+END_COMMENT
+#+BEGIN_EXAMPLE
+$GS_HOME                            # GridDB home directory
+
+               conf/                # Directory storing definition files
+                    gs_cluster.json # Template for cluster definition file
+                    gs_node.json    # Template for node definition file
+#+END_EXAMPLE
+
+#+BEGIN_COMMENT
+#新規インストールでは、GridDBホームディレクトリ下のconfディレクトリにも同じファイルが
+#配置されています。
+#
+##+BEGIN_EXAMPLE
+#/var/lib/gridstore/                     # GridDB home directory
+#                   conf/                # Directory storing definition files
+#                        gs_cluster.json # (Edited) Cluster definition file
+#                        gs_node.json    # (Edited) Node definition file
+##+END_EXAMPLE
+#
+#_運用の際には、こちらの定義ファイルを編集してください。_
+#+END_COMMENT
+
+*[Note]*
+#+BEGIN_COMMENT
+#- GridDBをバージョンアップした場合、新たにインストールされた雛形と、
+#  これらの定義ファイルとを比較し、追加されたパラメータを適宜反映してください。
+#+END_COMMENT
+- The cluster definition file is a file which defines the parameters commonly used in the entire cluster. Accordingly, all the nodes participating in a cluster must share the same settings. A node with a different setting will fail to participate in the cluster, causing an error, which is shown later.
+
+*** Configuration of the Network Environment (Mandatory)
+# <<setup_networks>>
+
+First, configure the network environment. There are roughly two types of setting parameters as follows:
+
+- (1)Address information serving as the interface with a client
+- (2)Address information for cluster management
+#+BEGIN_COMMENT
+#- (3)JDBCクライアントとのインタフェースとなるアドレス情報(NewSQL製品のみ)
+#+END_COMMENT
+
+Although these settings need to be set to match the environment, basically default settings will also work.
+
+_However, an IP address derived in reverse from the host name of the machine needs to be an address that allows it to be connected from the outside 
+regardless of whether the GridDB cluster has a multiple node configuration or a single node configuration._
+
+Normally, this can be set by stating the host name and the corresponding IP address in the /etc/hosts file.
+
+*Setting /etc/hosts*
+
+First, check with the following command to see whether the setting has been configured. If the IP address appears, it means that the setting has already been configured.
+
+#+BEGIN_EXAMPLE
+$ hostname -i
+192.168.11.10
+#+END_EXAMPLE
+
+The setting has not been configured in the following cases.
+
+#+BEGIN_EXAMPLE
+$ hostname -i
+hostname: Unknown host
+#+END_EXAMPLE
+
+In addition, a loopback address that cannot be connected from the outside may appear.
+
+#+BEGIN_EXAMPLE
+$ hostname -i
+127.0.0.1
+#+END_EXAMPLE
+
+If the setting has not been configured or if a loopback address appears, 
+use the following example as a reference to configure /etc/hosts. The host name and IP address, and the appropriate network interface card (NIC) differ depending on the environment.
+
+1. Check the host name and IP address.
+
+#+BEGIN_EXAMPLE
+$ hostname
+GS_HOST
+$ ip route | grep eth0 | cut -f 12 -d " " | tr -d "\n"
+192.168.11.10
+#+END_EXAMPLE
+
+2. Add the IP address and corresponding host name checked by the root user to the /etc/hosts file.
+
+#+BEGIN_EXAMPLE
+192.168.11.10   GS_HOST
+#+END_EXAMPLE
+
+3. Check that the settings have been configured correctly.
+
+#+BEGIN_EXAMPLE
+$ hostname -i
+192.168.11.10
+#+END_EXAMPLE
+
+*If the displayed setting remains the same as before, it means that a setting higher in priority is given in the /etc/hosts file. Change the priority order appropriately.
+
+Proceed to the next setting after you have confirmed that /etc/hosts has been configured correctly.
+
+
+*(1)Address information serving as an interface with the client*
+
+In the address information serving as an interface with the client, there are settings in the *Node definition file* and *Cluster definition file*.
+
+*Node definition file*
+#+ATTR_HTML: border="2"  align="center"
+|-----------------------------+----------+------------------------------------|
+| Parameter                  | Data type | Meaning                               |
+|-----------------------------+----------+------------------------------------|
+| /transaction/serviceAddress | string   | Listening address for transactions |
+| /transaction/servicePort    | string   | Listening port for transactions   |
+| /system/serviceAddress      | string   | Connection address for operational commands     |
+| /system/servicePort         | string   | Connection port for operational commands       |
+|-----------------------------+----------+------------------------------------|
+
+The listening addresses and ports for transactions are used for a client to request a transaction of a GridDB cluster.
+Although this address is used to compose a cluster with a single node, it is not used explicitly when composing a cluster with multiple nodes using the API.
+
+#+BEGIN_COMMENT
+##管理RESTコマンドの接続アドレスおよびポートは、運用コマンドの処理要求先の指定や、統合運用管理GUIのリポジトリ情報としても利用します。
+#+END_COMMENT
+The connection address and port of the operational command is also used in specifying the process request destination of the operating command.
+
+You do not have to define these listening / connection addresses unless you need to use more than one interface for different purposes.
+
+*Cluster definition file*
+
+#+ATTR_HTML: border="2"  align="center"
+|------------------------------------+----------+------------------------------------------|
+| Parameter                         | Data type | Meaning                                     |
+|------------------------------------+----------+------------------------------------------|
+| /transaction/notificationAddress   | string   | Interface address between a client and a cluster |
+| /transaction/notificationPort      | string   | Interface port between a client and a cluster   |
+|------------------------------------+----------+------------------------------------------|
+
+A multi-cast address and port are specified in the interface address between a client and cluster.
+This is used by a GridDB cluster to send cluster information to its clients and for the clients to send processing requests via the API to the cluster.
+See the description of the GridStoreFactory class/method in ([[file:GridDB_API_Reference.html][GridDB_API_Reference.html]]) for details.
+
+#+BEGIN_COMMENT
+#
+#エクスポート/インポートツールの接続先アドレス、統合運用管理GUIのリポジトリ情報としても利用します。
+#+END_COMMENT
+
+
+*(2)Address information for cluster administration and processing*
+
+In the address information for the cluster to autonomously perform cluster administration and processing, there are settings in the *Node definition file* and *Cluster definition file*.
+These addresses are used internally by GridDB to exchange the heart beat (live check among clusters) and information among the clusters.
+These settings are not necessary so long as the address used is not duplicated with other systems on the same network or when using multiple network interface cards.
+
+*Node definition file*
+#+ATTR_HTML: border="2"  align="center"
+|-------------------------+----------+------------------------------------------|
+| Parameter              | Data type | Meaning                                     |
+|-------------------------+----------+------------------------------------------|
+| /cluster/serviceAddress | string   | Listening address for cluster management |
+| /cluster/servicePort    | string   | Listening port for cluster management   |
+|-------------------------+----------+------------------------------------------|
+
+*Cluster definition file*
+#+ATTR_HTML: border="2"  align="center"
+|--------------------------------+----------+------------------------------------------------|
+| Parameter                     | Data type | Meaning                                           |
+|--------------------------------+----------+------------------------------------------------|
+| /cluster/notificationAddress   | string   | Multicast address for cluster management |
+| /cluster/notificationPort      | string   | Multicast port for cluster management   |
+|--------------------------------+----------+------------------------------------------------|
+
+- Although a synchronization process is carried out with a replica when the cluster configuration is changed, a timeout time can be set for the process.
+  + /sync/timeoutInterval
+
+*[Note]*
+- An address or port that is not in use except in GridDB has to be set.
+- The same address can be set for the node definition file gs_node.json /transaction/serviceAddress, /system/serviceAddress, and /cluster/serviceAddress
+   for operations to be performed.
+  If a machine has multiple network interfaces, 
+  the bandwidth can be increased by assigning a separate address to each respective interface.
+
+#+BEGIN_COMMENT
+#_以下の設定はNewSQL 製品のみを対象としています。_
+#
+#*(3)JDBCクライアントとのインタフェースとなるアドレス情報*
+#
+#JDBC/ODBCクライアントとのインタフェースとなるアドレス情報には *Node definition file* および *Cluster definition file* に設定項目があります。
+#
+#*Node definition file*
+##+ATTR_HTML: border="2"  align="center"
+#|--------------------------------+----------+-------------------------------------------+
+#| Parameter                     | Data type | Meaning                                      |
+#|--------------------------------+----------+-------------------------------------------+
+#| /sql/serviceAddress            | string   | JDBC/ODBCクライアント接続用の受信アドレス      |
+#| /sql/servicePort               | int      | JDBC/ODBCクライアント接続用の受信ポート        |
+#|--------------------------------+----------+-------------------------------------------|
+#
+#JDBC/ODBCクライアント接続用の受信アドレスおよびポートは、
+#JDBC/ODBCクライアントがクラスタを構成するノードに個別に接続してクラスタのデータにSQLでアクセスするために使用します。
+#クラスタをノード1台で構成する場合は利用しますが、複数台で構成する場合にはAPIを用いて明示的にこのアドレスを利用することはありません。
+#
+#*Cluster definition file*
+#
+##+ATTR_HTML: border="2"  align="center"
+#|--------------------------------+----------+-------------------------------------------------+
+#| Parameter                     | Data type | Meaning                                            |
+#|--------------------------------+----------+-------------------------------------------------+
+#| /sql/notificationAddress       | string   | Multicast address to JDBC/ODBC clients    |
+#| /sql/notificationPort          | int      | Multicast port to JDBC/ODBC clients      |
+#|--------------------------------+----------+-------------------------------------------------+
+#
+#Multicast address to JDBC/ODBC clientsおよびポートは、
+#GridDBクラスタがJDBC/ODBCクライアントに対してクラスタ情報を通知し、JDBC/ODBCクライアントでクラスタのデータにSQLでアクセスするために利用します。
+#
+#その他のパラメータとデフォルト値は、付録の[[#param_list][パラメータ一覧]]を参照ください。
+#+END_COMMENT
+
+*** Setting the cluster name (mandatory)
+# <<setup_clusterName>>
+
+Set the name of the cluster to be composed by the target nodes in advance. The name set will be checked 
+to see if it matches the value specified in the command to compose the cluster. As a result, 
+this prevents a different node and cluster from being composed when there is an error in specifying the command.
+
+The following settings in the *Cluster definition file* are specified in the cluster name.
+
+*Cluster definition file*
+#+ATTR_HTML: border="2"  align="center"
+|-----------------------------+----------+------------------------------------|
+| Parameter                  | Data type | Meaning                               |
+|-----------------------------+----------+------------------------------------|
+| /cluster/clusterName        | string   | Name of cluster to create             |
+|-----------------------------+----------+------------------------------------|
+
+*[Note]*
+- _Node failed to start with default value ("")._
+- _A unique name on the sub-network is recommended._
+- A cluster name is a string composed of 1 or more ASCII alphanumeric characters and the underscore “_”. However, 
+  the first character cannot be a number. The name is also not case-sensitive. In addition, it has to be specified within 64 characters.
+
+** configure tuning parameters.
+# <<tune-up_params>>
+
+The main tuning parameters are described here.
+These parameters are not mandatory but affect the processing performance of the cluster.
+
+
+*** Configuring Tuning Parameters
+
+GridDB creates a transaction log file and a checkpoint file for persistence. Since writing data to these files would have an impact on update performance, you can change creation behaviors by specifying the parameters below. However, as a disadvantage, there might be a high probability of losing data in the event of a failure.
+
+Below are the relevant parameters.
+
+*Node definition file*
+#+ATTR_HTML: border="2" align="center"
+|----------------------------+----------+--------------------|
+| Parameter                 | Data type | Meaning               |
+|----------------------------+----------+--------------------|
+| /dataStore/persistencyMode | string   | Persistence mode       |
+| /dataStore/logWriteMode    | int      | Log write mode |
+|----------------------------+----------+--------------------|
+
+The persistence mode specifies whether to write to files at the time of updating data. The log write mode specifies the timing of writing to a transaction log file.
+
+The following values are available to the persistence mode.
+
+- "NORMAL"
+- "KEEP_ALL_LOGS"
+
+"NORMAL" indicates writing to a transaction log file and a checkpoint file at every update. Transaction log files no longer required due to a particular checkpoint are removed. "KEEP_ALL_LOGS" indicates writing to files at the same timing as in "NORMAL" but leaving all transaction log files. The default value is "NORMAL".
+
+[Note]
+
+*[Note]*
+#+BEGIN_COMMENT
+#- 差分バックアップを行う場合には永続化モードを"NORMAL"に設定してください。
+#+END_COMMENT
+
+The following values are available to the log write mode.
+
+- 0: SYNC
+- 1 or larger integer: DELAYED_SYNC
+
+"SYNC" indicates writing to a log file at every commit or abort of an update transaction. "DELAYED_SYNC" indicates writing to a log file with delay every specified seconds, irrespective of update timing. The default value is "1 (DELAYED_SYNC 1 second)."
+
+*** Parameters Related to Performance and Availability
+
+GridDB can improve search performance and availability by storing replicate data in multiple nodes of a cluster. Since replicating data would have impact on update performance, you can change replecation behaviors by specifying the parameters below. However, as a disadvantage, there might be a high probability of losing data in the event of a failure.
+
+Below are the relevant parameters.
+
+*Cluster definition file*
+#+ATTR_HTML: border="2" align="center"
+|------------------------------+----------+------------------------|
+| Parameter                   | Data type | Meaning                   |
+|------------------------------+----------+------------------------|
+| /transaction/replicationMode | int      | Replication mode |
+|------------------------------+----------+------------------------|
+
+The replication mode indicates the method of replication. This mode must be shared by all nodes in a cluster.
+
+- "0": Asynchronous replication
+- "1": Semi-synchronous replication
+
+"Asynchronous replication" performs replication asynchronously with the timing of an update transaction. "Semi-synchronous replication" performs replication synchronously with the timing of an update transaction, but does not wait for completion of replication. The default is "0".
+
+#+BEGIN_COMMENT
+#*** 起動直後のアクセス性能に関するパラメータ
+#
+#ノードの起動と同時に、ディスク等に永続化されたデータをメモリ上にロードさせることができます(ウォームスタート処理)。
+#
+#ウォームスタート処理の有効/無効は以下のパラメータで切り替えることができます。
+#
+#*Node definition file*
+##+ATTR_HTML: border="2" align="center"
+#|--------------------------------+----------+----------------------------------------|
+#| Parameter                     | Data type | Meaning                                   |
+#|--------------------------------+----------+----------------------------------------|
+#| /dataStore/storeWarmStart      | boolean  | スタート処理モード                     |
+#|--------------------------------+----------+----------------------------------------|
+#
+#- false: 非ウォームスタートモード
+#- true: ウォームスタートモード
+#
+#デフォルトはtrue(有効)です。
+#+END_COMMENT
+
+*** Other Parameters
+# <<other_params>>
+
+An explanation of the other parameters is given.
+Refer to [[#param_list][the list of parameters]] in the annex for the default value.
+
+*Node definition file*
+
+#+BEGIN_COMMENT
+#+ATTR_HTML: border="2"  align="center"
+|--------------------------------+----------+----------------------------------------|
+| Parameter                     | Data type | Meaning                                   |
+|--------------------------------+----------+----------------------------------------|
+| /dataStore/dbPath              | string   | Directory storing database files       |
+| /dataStore/backupPath          | string   | Backup file directory       |
+| /dataStore/storeMemoryLimit    | string   | Memory buffer size                   |
+| /dataStore/concurrency         | int      | Concurrency level                             |
+| /dataStore/affinityGroupSize   | int      | Number of data affinity groups         |
+|--------------------------------+----------+----------------------------------------|
+| /checkpoint/checkpointInterval | int      | Checkpoint interval (in seconds)      |
+|--------------------------------+----------+----------------------------------------|
+| /system/eventLogPath           | string   | Event log file output directory |
+|--------------------------------+----------+----------------------------------------|
+| /transaction/connectionLimit   | int      | Upper limit of connections                   |
+|--------------------------------+----------+----------------------------------------|
+| /trace/category                | string   | Event log output level                 |
+|--------------------------------+----------+----------------------------------------|
+#+END_COMMENT
+#+ATTR_HTML: border="2"  align="center"
+|--------------------------------+----------+----------------------------------------|
+| Parameter                     | Data type | Meaning                                   |
+|--------------------------------+----------+----------------------------------------|
+| /dataStore/dbPath              | string   | Directory storing database files       |
+| /dataStore/storeMemoryLimit    | string   | Memory buffer size                   |
+| /dataStore/concurrency         | int      | Concurrency level                             |
+| /dataStore/affinityGroupSize   | int      | Number of data affinity groups         |
+|--------------------------------+----------+----------------------------------------|
+| /checkpoint/checkpointInterval | int      | Checkpoint interval (in seconds)      |
+|--------------------------------+----------+----------------------------------------|
+| /system/eventLogPath           | string   | Event log file output directory |
+|--------------------------------+----------+----------------------------------------|
+| /transaction/connectionLimit   | int      | Upper limit of connections                   |
+|--------------------------------+----------+----------------------------------------|
+| /trace/category                | string   | Event log output level                 |
+|--------------------------------+----------+----------------------------------------|
+
+- The database file directory is a directory storing transaction log files and checkpoint files which are created to make in-memory data persistent.
+#+BEGIN_COMMENT
+#- The backup file directory is a directory storing backup files which are created when performing backup operations, shown in the next section and later.
+#+END_COMMENT
+- The memory buffer size is a memory size used for data management.
+  Specify with a string with the unit attached (example: "2048MB").
+- The concurrency level is an upper limit number of concurrent I/Os to secondary storage in GridDB.
+- In data affinity, specify the number of groups when collecting related data and managing the layout.
+- A value from 1 to 64 can be specified for the number of groups. Note that the larger the number of groups, 
+  the lower the memory operating efficiency will be.
+- The checkpoint interval is an interval at which checkpoint operations (related to data persistence) are performed internally and periodically.
+- The event log output directory is a directory storing messages about events, such as an Exception occurring in a node (event message files).
+- Set an upper limit of at least twice the number of expected clients as a guide for the number of connections.
+- The event log output level is the output level for each category of the event log.
+
+** Distribute the definition file to each node
+# <<dist_conf>>
+
+_Among the definition files, the user definition file and cluster definition file need to have 
+the same settings in all the nodes composing a GridDB cluster._
+
+As a result, when composing a cluster with 2 or more nodes, follow the procedure below to set all the nodes.
+(When composing a cluster with a single node, the settings of the node and cluster are completed with the procedure so far. )
+
+1. Perform [[#setup_admin][Set up administrator user]], [[#setup_params][Set up environment-dependent parameters]] on either of the machines installed with nodes.
+2. Copy and overwrite the *Cluster definition file* and *User definition file* to the definition file directory of another node.
+- Copy the *Node definition file* as well when configuring settings common to all the nodes.
+3. Configure settings that differ among the nodes separately. ([[#setup_networks][set up network environment]], etc.)
+A
+** Installing and Setting Up GridDB (Client)
+# <<setup_client>>
+
+This section shows how to install client libraries. 
+#+BEGIN_COMMENT
+#GridDB provides two kinds of client libraries: Java-based and C-based. 
+#なお、NewSQL機能をサポートするライブラリは、Java版のみです。
+#+END_COMMENT
+
+*** Confirming the Environment
+
+We have confirmed the operation on CentOS 6.7
+
+#+BEGIN_EXAMPLE
+$ lsb_release -id
+Distributor ID: CentOS
+Description:    CentOS release 6.7 (Final)
+#+END_EXAMPLE
+
+*[Note]*
+- Select the following option at the minimum for Package Group Selection while installing OS.
+  + Software Development WorkStation
+
+We have confirmed the operation on Oracle Java 7 as a Java development environment.
+
+#+BEGIN_COMMENT
+#- NewSQL製品の場合 64ビット　Javaのみがサポート対象です
+#+END_COMMENT
+
+#+BEGIN_EXAMPLE
+$ java -version
+java version "1.7.0_79"
+Java(TM) SE Runtime Environment (build 1.7.0_79-b15)
+Java HotSpot(TM) 64-Bit Server VM (build 24.79-b02, mixed mode)
+#+END_EXAMPLE
+
+*** Installing a client library
+
+#+BEGIN_COMMENT
+#The following are RPM packages required to install GridDB client libraries.
+#インストールするマシンの任意の場所に配置してください。
+#
+#gridstore-newsqlパッケージはNewSQL製品をご購入の場合のみ含まれています。
+#
+##+ATTR_HTML: border="2"  align="center"
+#|--------------------+----------------------------------------+-----------------------------------------------------------|
+#| Package name       | File name                             | Content                                                      |
+#|--------------------+----------------------------------------+-----------------------------------------------------------|
+#| gridstore-java_lib | gridstore-java_lib-X.X.X-RH.x86_64.rpm | Contains Java libraries.                            |
+#|                    |                                        | （/usr/share/java/gridstore.jar）                         |
+#| gridstore-c_lib    | gridstore-c_lib-X.X.X-RH.x86_64.rpm    | Contains header files and libraries for C.               |
+#|                    |                                        | （/usr/include/gridstore.h と /usr/lib64/libgridstore.so）|
+#| gridstore-docs     | gridstore-docs-X.X.X-RH.x86_64.rpm     | Contains GridDB's manuals and sample programs. |
+#|                    |                                        |                                                           |
+#| gridstore-newsql   | gridstore-newsql-X.X.X-RH.x86_64.rpm   | NewSQLのライブラリが含まれます。                          |
+#|--------------------+----------------------------------------+-----------------------------------------------------------|
+#
+#Switch to the root user and install the necessary RPM packages by the rpm command, as shown below.
+##+BEGIN_EXAMPLE
+#$ su
+## rpm -ivh gridstore-c_lib-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#   1:gridstore-c_lib        ########################################### [100%]
+## rpm -ivh gridstore-java_lib-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#   1:gridstore-java_lib     ########################################### [100%]
+## rpm -ivh gridstore-docs-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#   1:gridstore-docs         ########################################### [100%]
+## rpm -ivh gridstore-newsql-X.X.X-RH.x86_64.rpm
+#Preparing...                ########################################### [100%]
+#   1:gridstore-newsql       ########################################### [100%]
+##+END_EXAMPLE
+#+END_COMMENT
+Client library are installed by running 'make' in [[#install][Installing a Node]].
+
+*** Confirmation After Installation
+#+BEGIN_COMMENT
+#
+#Confirm the directory structure of the installed GridDB client libraries. If installation completed normally, the following directories are created.
+#
+#*Installation directory*
+#
+##+BEGIN_EXAMPLE
+#/usr/gridstore-X.X.X/              # Installation directory
+#                     docs/         # Document directory
+#                     lib/          # Library directory
+#
+#NewSQL製品をインストールしている場合、以下のディレクトリも作成されます。
+#
+#/usr/gridstore-newsql-X.X.X/       # NewSQL Installation directory
+#                            lib/   # Library directory
+##+END_EXAMPLE
+#
+#また、以下のシンボリックリンクが作成されます。
+#
+#*シンボリックリンク*
+#
+##+BEGIN_EXAMPLE
+#/usr/lib64/libgridstore.so -> /usr/lib64/libgridstore.so.0
+#/usr/lib64/libgridstore.so.0 -> /usr/lib64/libgridstore.so.0.0.0
+#/usr/lib64/libgridstore.so.0.0.0 -> /usr/gridstore-X.X.X/lib/libgridstore.so.0.0.0
+#
+#/usr/share/java/gridstore.jar -> /usr/gridstore-X.X.X/lib/gridstore-X.X.X.jar
+#
+#NewSQL製品をインストールしている場合、以下のファイルも作成されます。
+#
+#/usr/share/java/gridstore-jdbc.jar -> /usr/gridstore-newsql-X.X.X/lib/gridstore-jdbc-X.X.X.jar
+##+END_EXAMPLE
+#+END_COMMENT
+The file below is created when the installation is completed normally.
+#+BEGIN_EXAMPLE
+$GS_HOME/bin/gridstore.jar              # Java libraries
+#+END_EXAMPLE
+
+*** Setting Up Libraries
+
+If you use a Java-based client, add the client library path to CLASSPATH.
+
+#+BEGIN_COMMENT
+##+BEGIN_EXAMPLE
+#$ export CLASSPATH=${CLASSPATH}:/usr/share/java/gridstore.jar
+##+END_EXAMPLE
+#
+#If you use a C-based client, add the client library path to LD_LIBRARY_PATH.
+#
+##+BEGIN_EXAMPLE
+#$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/lib64
+##+END_EXAMPLE
+#+END_COMMENT
+#+BEGIN_EXAMPLE
+$ export CLASSPATH=${CLASSPATH}:$GS_HOME/bin/gridstore.jar
+#+END_EXAMPLE
+
+*** Setting Up a Client
+
+There is no definition file for setting up a client.
+Specify the connection point and user/password in the client program.
+
+#+BEGIN_COMMENT
+#指定の詳細については、NoSQLの場合"GridDB API Reference"([[file:GridDB_API_Reference.html][GridDB_API_Reference.html]])、NewSQLの場合『GridDB/NewSQL DB JDBCドライバ説明書』([[file:GridDB_NewSQL_JDBC_Driver_Guide.pdf][GridDB_NewSQL_JDBC_Driver_Guide.pdf]])を参照ください
+#+END_COMMENT
+For details on the NoSQL specifications, refer to "GridDB API Reference" ([[file:GridDB_API_Reference.html][GridDB_API_Reference.html]])
+
+#+BEGIN_COMMENT
+#** アンインストールする
+#
+#GridDBが不要となった場合には全てのパッケージをアンインストールします。
+#以下の手順でアンインストールを実行してください。
+#
+##+BEGIN_EXAMPLE
+#$ su
+## rpm -e gridstore-server
+## rpm -e gridstore-client
+## rpm -e gridstore-java_lib
+## rpm -e gridstore-c_lib
+## rpm -e gridstore-newsql
+## rpm -e gridstore-docs
+##+END_EXAMPLE
+#
+#_定義ファイルやデータファイルなど、GridDBホームディレクトリ下のファイルはアンインストールされません。_
+#
+#不要な場合は手動で削除して下さい。
+#+END_COMMENT
+
+
+* Operations
+# <<chap_operation>>
+
+This chapter shows the operational procedures for GridDB.
+
+The following cases are covered:
+
+- Operations from starting to stopping
+#+BEGIN_COMMENT
+#- Operations while a cluster is working
+#- Actions to be taken in the event of a failure
+#+END_COMMENT
+
+
+The following commands are available for operations.
+
+[Command list]
+#+BEGIN_COMMENT
+##+ATTR_HTML: border="2"  align="center"
+#|-------------------+-------------------------------------------|
+#| Command          | Function                                      |
+#|-------------------+-------------------------------------------|
+#| gs_startnode      | Stars a node.                          |
+#| gs_joincluster    | Creates a cluster / joins a node to a cluster.     |
+#| gs_stopcluster    | Stops a cluster (makes a cluster stop working).         |
+#| gs_stopnode       | Stops (shuts down) a node.          |
+#| gs_leavecluster   | Isolates a node from a cluster.            |
+#| gs_appendcluster  | クラスタを拡張する                        |
+#|-------------------+-------------------------------------------|
+#| gs_config         | Obtains configuration information on cluster nodes.        |
+#| gs_stat           | Obtains internal information of a node.                |
+#| gs_paramconf      | サービスで利用するメモリを変更する        |
+#| gs_logs           | Obtains event logs of a node.            |
+#| gs_logconf        | ノードのログ出力レベルを変更する          |
+#|-------------------+-------------------------------------------|
+#| gs_backup         | ノードのデータをバックアップする          |
+#| gs_backuplist     | バックアップデータを確認する              |
+#| gs_restore        | バックアップデータをリストアする          |
+#|-------------------+-------------------------------------------|
+#| gs_import         | データのインポート                        |
+#| gs_export         | データのエクスポート                      |
+#|-------------------+-------------------------------------------|
+#+END_COMMENT
+#+ATTR_HTML: border="2"  align="center"
+|-------------------+-------------------------------------------|
+| Command          | Function                                      |
+|-------------------+-------------------------------------------|
+| gs_startnode      | Stars a node.                          |
+| gs_joincluster    | Creates a cluster / joins a node to a cluster.     |
+| gs_stopcluster    | Stops a cluster (makes a cluster stop working).         |
+| gs_stopnode       | Stops (shuts down) a node.          |
+| gs_leavecluster   | Isolates a node from a cluster.            |
+|-------------------+-------------------------------------------|
+| gs_stat           | Obtains internal information of a node.                |
+|-------------------+-------------------------------------------|
+
+*[Points to note when using operating commands]*
+#+BEGIN_COMMENT
+#- 運用コマンドはgsadmユーザで実行してください。
+#+END_COMMENT
+- If the proxy environment variable "http_proxy" is defined, set the addresses of nodes to "no_proxy" to specify that the proxy should not be consulted for those addresses;otherwise, a REST/HTTP communication invoked by an operational command will be wrongly sent to the proxy server and the command will not work.
+- In the case of a command that has the option "CONNECTION_SERVER:PORT," you do not have to specify this option unless you have changed the setting of a port number from the default.If you specify the option "CONNECTION_SERVER:PORT," you can execute the command on a computer other than the comuter on which you run a node.
+
+The following sections show how to use the operational commands.
+#+BEGIN_COMMENT
+#なお、エクスポート/インポートに関しては、『GridDB 運用管理ガイド』([[file:GridDB_OperationGuide.html][GridDB_OperationGuide.html]])を参照ください。
+#+END_COMMENT
+
+** Operations from Starting to Stopping
+
+*** Basic Flow
+
+Below is shown an flow of regular operations from starting to stopping a GridDB cluster, after installing and setting up a GridDB node.
+
+1. Start each node.
+2. Configure a cluster.
+3. Use GridDB services.
+4. Stop the cluster.
+5. Stop each node.
+
+*[Usage note]*
+- The instructions shown below presuppose that the operations administrator is aware of the hostnames (or addresses) of all machines running nodes.
+- They also presuppose that the administrator is aware of the number of nodes participating in a cluster.
+- User “admin” and password “admin” are used as examples in the user authentication option (-u).
+
+*** Starting Each Node
+
+Execute the "gs_startnode" command to start a node on a machine on which to run the node. You need to execute this command for each node.
+
+#+BEGIN_COMMENT
+#However, if a GridDB node process (gsserver) is automatically run by a service, the starting operation shown below is not necessary. Proceed to the next section, "Configuring a Cluster."
+#+END_COMMENT
+
+Use the command below to start a node.
+
+- gs_startnode
+
+Use the node definition file, cluster definition file and user definition file settings under the conf director of GridDB home directory file to start the node.
+A command execution example is shown below.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_startnode
+#+END_EXAMPLE
+
+You need to start a node on each machine constituting a cluster.
+
+*[Note]*
+- In cluster configuration, all participant nodes must share the same definitions in their *Cluster definition file*. Make sure that all nodes have the same definitions in their cluster definition files.
+Also, all nodes must share the same definitions in their *User definition file*.
+
+
+*** Configuring a Cluster
+
+Join the started node to a cluster to constitute a cluster. This operation is necessary even if you run GridDB on a single node (not on multiple nodes of a cluster).
+
+To join a node to a cluster, execute the "gs_joincluster" command as below:
+
+  - gs_joincluster [-s CONNECTION_SERVER:PORT] -n|–-nodeNum NUM_OF_NODES -c|-–clusterName CLUSTER_NAME -u USERNAME/PASSWORD
+
+Specify "CLUSTER_NAME" and "NUM_OF_NODES" as options.
+
+Specify the number of nodes constituting a GridDB cluster for "NUM_OF_NODES." This value is used as a threshold in various services when starting GridDB for the first time.
+
+Below is shown an example of executing the command on a computer on which a node runs. 
+Create a cluster with the cluster name “[[#setup_clusterName][setup_cluster_name]]” 
+and “1” being the number of nodes constituting the cluster.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_joincluster -c setup_cluster_name -n 1 -u admin/admin
+#+END_EXAMPLE
+
+Below is shown an example of executing the command on other than a computer on which a node runs. This example shows the case of joining to a cluster named "example_three_nodes_cluster," initially consisting of "3" nodes, on a computer with the address "192.168.10.11" on which a node runs.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_joincluster -s 192.168.10.11:10040 -c example_three_nodes_cluster -n 3 -u admin/admin
+#+END_EXAMPLE
+
+A cluster is composed by correctly specifying and executing the cluster name for each of the 3 machines that make up the cluster.
+Cluster service will start when the number of nodes participating in a cluster is equal to the number of nodes constituting the cluster.
+Once service is started, you will be able to access the cluster from the application.
+
+This command returns control immediately after its request is received. 
+Since the connection from the application may fail before the cluster is constituted, 
+specify the -w option at the last unit that compose the cluster and wait for the cluster constitution to be completed.
+
+An example to compose a cluster with 3 nodes by executing the command the same way to the other 2 machines is shown below.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_joincluster -s 192.168.10.12:10040 -c example_three_nodes_cluster -n 3 -u admin/admin
+$ gs_joincluster -s 192.168.10.13:10040 -c example_three_nodes_cluster -n 3 -u admin/admin -w
+...
+Joined node
+#+END_EXAMPLE
+
+*[Note]*
+- Specify 1 for the number of nodes constituting a cluster in a single node configuration.
+- If the cluster participation command ends in an error, it means that there is a discrepancy in the cluster definition file of the node.
+  Check the cluster definition file again and adopt the same definition.
+- The cluster service will not start when the number of nodes participating in a cluster does not reach the number of nodes constituting the cluster.
+  When service is not started, check whether the number of nodes is correct.
+
+Separate the nodes from the cluster 
+if a wrong number of nodes constituting a cluster is specified. Execute the following cluster separation command.
+
+  - gs_leavecluster [-s CONNECTION_SERVER:PORT] -u USERNAME/PASSWORD
+
+An example of the command execution in a machine in which the nodes to be separated from the cluster have been started is shown below.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_leavecluster -u admin/admin
+#+END_EXAMPLE
+
+*[Note]*
+- If this command is used for the purpose of stopping the cluster, there is a possibility that the data may no longer be viewable after the cluster comes into operation again.
+- If the cluster is already in operation, use the cluster stop command (gs_stopcluster).
+
+*** Using a Service
+
+After configuring a cluster, you can use data storage and search services in GridDB from a client program, using a registered user account.
+
+For detail on creation of a client program, see 
+#+BEGIN_COMMENT
+#"GridDB API Reference"([[file:GridDB_API_Reference.html][GridDB_API_Reference.html]]) and 
+#"GridDB Programming Tutorial"([[file:GridDB_ProgrammingTutorial.html][GridDB_ProgrammingTutorial.html]]).
+#+END_COMMENT
+"GridDB API Reference"([[file:GridDB_API_Reference.html][GridDB_API_Reference.html]]).
+
+
+#+BEGIN_COMMENT
+#*** サービスで利用するメモリを変更する
+#
+#GridDBで利用するメモリは、GridDBを構成するノードの *Node definition file* で定義されます。
+#この値を、ノードやクラスタの再起動を行わずオンラインで変更できます。
+#
+#*Node definition file*
+##+ATTR_HTML: border="2"  align="center"
+#|-----------------------------+----------+----------------------------------------|
+#| Parameter                  | Data type | Meaning                                   |
+#|-----------------------------+----------+----------------------------------------|
+#|/dataStore/storeMemoryLimit  | string   | 利用可能なメモリサイズ                 |
+#|-----------------------------+----------+----------------------------------------|
+#
+#Execute the command below:
+#
+#  - gs_paramconf [-s CONNECTION_SERVER:PORT] -u USERNAME/PASSWORD  --show storeMemoryLimit | --set storeMemoryLimit value  
+#  
+#
+#以下に、ノードが起動しているマシン上でコマンドを実行する例を示します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_paramconf -u admin/admin --set storeMemoryLimit 2048MB
+#$ gs_paramconf -u admin/admin --show storeMemoryLimit
+#"2048MB"
+##+END_EXAMPLE
+#
+#*[Note]*
+#- この操作は、ノード単位の操作となります。すべてのノードに同様の変更を行いたい場合は、各ノードに上記操作を行ってください。
+#- _ノードをシャットダウンした場合、変更した設定は保存されません。_値を永続化するにはノード定義ファイルを変更してください。
+#+END_COMMENT
+
+*** Stopping a Cluster
+
+Stop a GridDB cluster. To stop each node, you need to first stop the GridDB cluster adminstration process, and then stop nodes one by one.
+
+First, stop the cluster administration process. To do so, execute the "gs_stopcluster" command.
+Execute the following command in one of the nodes participating in the cluster.
+
+  - gs_stopcluster [-s CONNECTION_SERVER:PORT] -u USERNAME/PASSWORD
+
+Below is shown an example of executing the command on a computer on which a node of the cluster to be stopped runs.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_stopcluster -u admin/admin
+#+END_EXAMPLE
+
+After the command is executed, all the nodes participating in the cluster will stop their data storage and search services.
+
+Then, stop (shut down) nodes. To do so, execute the "gs_stopnode" command as below:
+
+  - gs_stopnode [-w [WAIT_TIME]][-s CONNECTION_SERVER:PORT] [-f|--force] -u USERNAME/PASSWORD
+
+Below is shown an example of executing the "gs_stopnode" command on a computer on which a node runs.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_stopnode -w -u admin/admin
+#+END_EXAMPLE
+
+After executing the "gs_stopnode" command, it might take a while for checkpoint operations (writing data on the memory to files) before the process actually stops. We recommend that you wait for the command to end by specifying the -w option.
+
+
+
+*** Restarting a Stopped Cluster
+
+After shutting down a GridDB cluster, you can restart it by following the same procedure as for normal startup, as follows:
+
+- _Confirm beforehand the number of participant nodes at the time of shutdown._
+- Start node(s).
+- Join node(s) to the cluster specifying the number of nodes at the time of shutdown.
+
+Below is shown an example of restarting a single-node cluster.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_startnode
+...
+$ gs_joincluster -c setup_cluster_name -n 1 -u admin/admin
+...
+#+END_EXAMPLE
+
+- Specify [[#setup_clusterName][Setup cluster name]] for the cluster name in the cluster definition file.
+- Specify 1 for the number of nodes constituting a cluster in a single node configuration. For a multiple unit configuration, specify the number of nodes at the shutdown point.
+- The number of nodes participating in the cluster is output to the event log file at the shutdown point.
+
+If you restart a GridDB cluster, it will read database files (transaction log files and checkpoint files) to restore the state at the time of shutdown. 
+_It will start services after nodes in the number specified by "NUM_OF_NODES" participate in the cluster._
+
+
+*[Note]*
+- You must correctly specify the number of nodes at the time of shutdown for "NUM_OF_NODES." If you specify the number less than the value of "NUM_OF_INITIAL_NODES" specified when initially configuring a cluster, the cluster will not start any services. If no service is started, make sure that you specify the correct number of nodes.
+- If the wrong “Number of nodes constituting a cluster” is specified, separate the nodes from the cluster with a cluster separation command when the cluster is not in operation and specify the right “Number of nodes constituting a cluster” again before letting the nodes participate in the cluster.
+- If the wrong “Number of nodes constituting a cluster” is specified, there is a possibility of starting service in the wrong state when the cluster goes into operation. In this case, carry out the procedure to stop the cluster and then perform the restart procedure.
+- If the number of nodes changed after shutdown owing to a machine failure etc. (decreased after shutdown), go through the restarting procedure specifying the number of nodes restartable.Then, data will be reallocated as in the case of a failure occurring in operations.However, if the number of nodes decreases considerably, you might fail to access data.
+- You can change the IP addresses and port numbers of machines already participating in the cluster (/xxx/serviceAddress、 and /xxx/servicePort in the node definition file).
+
+
+
+
+
+** Obtaining Various Information
+
+#+BEGIN_COMMENT
+#*** Obtaining Cluster Configuration Information
+#
+#Obtain cluseter configuration information (a list of nodes participating in a cluster). To do so, execute the "gs_config" command as below:
+#
+#  - gs_config [-s CONNECTION_SERVER:PORT] -u USERNAME/PASSWORD
+#
+#Below is shown an example of executing the command on a computer on which a node runs.
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_config -u admin/admin
+#{
+#    "follower": [],
+#    "master": {
+#        "address": "192.168.1.10", 
+#        "port": 10040
+#    }, 
+#    "multicast": {
+#        "address": "239.0.0.1",
+#        "port": 31999
+#    },
+#    "self": {
+#        "address": "192.168.1.10", 
+#        "port": 10040, 
+#        "status": "ACTIVE"
+#    }
+#}
+##+END_EXAMPLE
+#
+#- ""follower" shows a list of nodes (addresses and port numbers) except the master node of the cluster in which the current node participates. More than one node can be contained.本情報はマスタノードのみで表示されます。
+#- "master" shows the address and port number of the master node governing the cluster in which the current node participates. Logically and invariably one node.
+#- "multicast"では、クラスタのマルチキャストアドレスおよびポートが表示されます。
+#- "self" shows the addresses and port number of the current node.
+#
+#The system status (status) indicates as follows:
+#
+#- INACTIVE : The node is down.
+#- ACTIVATING : The node is starting.
+#- ACTIVE : The node is running.
+#- DEACTIVATING : The node is stopping.
+#- ABNORMAL : The node has stopped abnormally.
+#- NORMAL_SHUTDOWN : The node is stopping normally.
+#
+#+END_COMMENT
+
+*** Obtaining Cluster Information
+
+Obtain cluster information (cluster configuration information and internal information). To do so, execute the "gs_stat" command as below:
+
+  - gs_stat [-s CONNECTION_SERVER:PORT] -u USERNAME/PASSWORD
+
+Below is shown an example of executing the command on a computer on which a node runs.
+
+[Example of command execution]
+#+BEGIN_EXAMPLE
+$ gs_stat -u admin/admin
+{
+                ：
+                ：
+    "cluster": {
+        "activeCount": 3,
+        "clusterName": "defaultCluster",
+        "clusterStatus": "MASTER",
+                ：
+                ：
+}
+#+END_EXAMPLE
+
+The cluster status (clusterStatus) indicates as follows:
+
+- MASTER : Master
+- SUB_MASTER : Master candidate when there is a master failure
+- FOLLOWER : Follower
+- SUB_FOLLOWER : Follower candidate when there is a master failure
+- SUB_CLUSTER : Cluster is not in operation
+
+The system status (nodeStatus) indicates as follows:
+
+- INACTIVE : The node is down.
+- ACTIVATING : The node is starting.
+- ACTIVE : The node is running.
+- DEACTIVATING : The node is stopping.
+- ABNORMAL : The node has stopped abnormally.
+- NORMAL_SHUTDOWN : The node is stopping normally.
+
+See [[#param_list][Parameter List]] for the descriptions of the other items.
+
+#+BEGIN_COMMENT
+#*** イベントログの表示
+#
+#直近のイベントログを取得します。以下のコマンドを用います。
+#
+#  - gs_logs [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD --lines 取得行数 [第一キーワード [第二キーワード]]
+#
+#以下に、ノードが起動しているマシン上で実行する場合のコマンド実行例を示します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_logs -u admin/admin --lines 3 WARNING
+#2015-02-23T05:28:47.780+0900 host1 728 WARNING EVENT_ENGINE [130901:EE_WAIT_COMPLETION] (queueingElapsed=0, handlerElapsed=10000, watcherEngine=CHECKPOINT_SERVICE, watchedEngine=TRANSACTION_SERVICE, e#ventType=3004)
+#2015-02-23T05:29:12.437+0900 host1 726 WARNING IO_MONITOR [1900:CM_LONG_IO] [LONG I/O] sync time,34656,fileName,data/gs_log_0_60.log
+#2015-02-23T05:29:12.438+0900 host1 726 WARNING IO_MONITOR [LONG EVENT] eventType=PARTITION_GROUP_END, pId=0, pgId=0, time=34658
+##+END_EXAMPLE
+#
+#イベントログは、イベント情報の文字列リストです。イベント情報の書式は以下のようになります。
+#
+#- 時刻、ホスト名、スレッド番号、イベントレベル、発生モジュール、イベント番号、イベント名、メッセージ
+#
+#詳細については、サポート窓口にお問い合わせください。
+#
+#*** イベントログ出力レベルの表示と変更
+#
+#イベントログの出力レベルの一覧を表示するには、以下のコマンドを用います。
+#
+#  - gs_logconf [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD
+#
+#以下に、ノードが起動しているマシン上で実行する場合のコマンド実行例を示します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_logconf -u admin/admin
+#{
+#    "levels": {
+#        "CHECKPOINT_SERVICE": "INFO",
+#        "CHECKPOINT_SERVICE_DETAIL": "ERROR",
+#        "CHUNK_MANAGER": "ERROR",
+#        "CLUSTER_OPERATION": "INFO",
+#                ：
+#                ：
+#    }
+#}
+##+END_EXAMPLE
+#
+#イベントログの出力レベルを変更するには、以下のコマンドを用います。
+#
+#  - gs_logconf [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD　カテゴリ　出力レベル
+#
+#以下に、ノードが起動しているマシン上で実行する場合のコマンド実行例を示します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_logconf -u admin/admin CHUNK_MANAGER INFO
+#$ gs_logconf -u admin/admin
+#{
+#    "levels": {
+#        "CHECKPOINT_SERVICE": "INFO",
+#        "CHECKPOINT_SERVICE_DETAIL": "ERROR",
+#        "CHUNK_MANAGER": "INFO",
+#        "CLUSTER_OPERATION": "INFO",
+#                ：
+#                ；
+#    }
+#}
+##+END_EXAMPLE
+#
+#出力レベルの一覧はレベルが高いものから低いものの順に以下のとおりとなります。
+#
+#- ERROR : エラー
+#- WARNING : 警告
+#- INFO : 情報
+#- DEBUG : デバッグ
+#
+#低い出力レベルを設定した場合、そのレベルよりも高い出力レベルのログもすべて出力されます。
+#例えばINFOを設定した場合は、INFO、WARNING、ERRORのログが出力されます。
+#
+#*[Note]*
+#- ノードをシャットダウンした場合、変更した設定は保存されません。
+#- ログ出力レベルは雛形のgs_node.jsonに記載されているデフォルト値か、それより低いレベルを
+#  設定することを推奨しています。また、デフォルト値は付録の[[#param_list][パラメータ一覧]]に記載しています。
+#
+#
+#** Backup and Restoration
+#
+#*** Backup and Restoration
+#
+#GridDB provides a hot backup utility which can be used for one node at a time.
+#
+#You can back up data of an active GirdStore node by executing the command below:
+#
+#  - gs_backup [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD BACKUP_NAME
+#
+#以下に、ノードが起動しているマシン上で実行する場合のコマンド実行例を示します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ cat /var/lib/gridstore/conf/gs_node.json         # Confirm the settings
+#{
+#	"dataStore":{
+#		"dbPath":"/var/lib/gridstore/data",
+#		"backupPath":"/var/lib/gridstore/backup",  # Backup directory
+#		"storeMemoryLimit":"1024MB",
+#		"storeWarmStart":true,
+#		"concurrency":1,
+#		"logWriteMode":1,
+#		"persistencyMode":"NORMAL",
+#            ：
+#            ：
+#}
+#$ gs_backup -u admin/admin 20130301_backup        # Perform backup
+#...
+##+END_EXAMPLE
+#
+#As a result, the following operations are performed.
+#
+#1) Create a directory "20130301_backup" under the backup directory (/var/lib/gridstore/backup).
+#2) チェックポイントファイル(gs_cp_n_p.dat)、(一つもしくは複数の)トランザクションログファイル(gs_log_n_m.log)、バックアップ情報ファイル(gs_backup_info.json,gs_backup_info_digest.json)を作成する(以降バ#ックアップファイル群と呼びます)。
+#
+#Control returns after starting a backup. It might take a few hours or more to complete a backup, depending on the data amount and the online processing load.
+#
+#バックアップの進捗状況は、gs_statコマンドで取得できます。
+#
+#以下のコマンドを実行することで、バックアップの進捗状況を確認できます。
+#
+#  - gs_stat  -t backup [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD 
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_stat  -t backup -u admin/admin 20130301_backup        
+#BackupStatus: Processing                          # バックアップの実行中
+#
+#$ gs_stat  -t backup -u admin/admin 20130301_backup  
+#BackupStatus: -                                   # バックアップの完了もしくは未稼働				
+##+END_EXAMPLE
+#*[Note]*
+#- バックアップの詳細については、『GridDB バックアップガイド』([[file:GridDB_BackupGuide.html][GridDB_BackupGuide.html]])を参照ください。
+#- サービスを継続しながらクラスタ全体のホットバックアップを行うには、クラスタを構成する全ノードに対して、上記のバックアップ操作を実行する必要があります。
+#- 例では、説明の便宜上、backupPathは =/var/lib/gridstore/backup= でしたが、実際の運用では、システムの構成に合わせて適切なディレクトリに変更してください。
+#- If you use this backup data for restoration, you can restore the data just before the completion of backup.
+#- If a failure occurs during backup, an incomplete backup will be created; so you cannot use such a backup for restoration.
+#- If more than one Container is created, a hot backup might create inconsistent backups across the cluster. As necessary, stop transaction services and perform a backup in a rest state.
+#- If a failure occurs, GridDB will reallocate data automatically. Therefore, if a failure occurs during backup, there is a possibility that necessary data cannot be backed up.In the event of a failure, perform backups again from the first node.
+#
+#
+#
+#*** Restoring Backup Data
+#
+#Restore backup data in a node.
+#
+#To restore the entire cluster from backup data, take the following steps:
+#
+#- Make sure that the target node is not active.
+#  + Make sure that the cluster definition file is the same as that of any other node to join to the cluseter.
+#- Make sure that past transaction logs and checkpoint files are not left in the database file directory of the node
+#  + Remove unnecessary files and move necessary files to any other directory.
+#- Execute a restoration command on a machine on which to run the node.
+#- Start the node.
+#- Join the node to the cluster.
+#
+#Execute the command below:
+#
+#  - gs_backuplist -u USERNAME/PASSWORD
+#
+#以下は、バックアップ名の一覧を表示する具体例です。
+#バックアップ名の一覧は、ノードの起動状態に関わらず表示できます。ノードが起動状態で、バックアップ処理中の場合はStatusはProcessingと表示されます。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_backuplist -u admin/admin
+#
+#BackupName   Status   StartTime                EndTime
+#------------------------------------------------------------------------
+# 20141025NO2     P   2014-10-25T06:37:10+0900 -
+# 20141025        NG  2014-10-25T02:13:34+0900 -
+# 20140925        OK  2014-09-25T05:30:02+0900 2014-09-25T05:59:03+0900
+# 20140825        OK  2014-08-25T04:35:02+0900 2014-08-25T04:55:03+0900
+##+END_EXAMPLE
+#
+#バックアップ状態(Status)は以下のいずれかになります。
+#+ OK：正常
+#+ NG：異常
+#+ P ：実行中
+#
+#*[Note]*
+#- StatusがNGと表示される場合、そのバックアップファイルはファイルが破損している可能性があるため、リストアすることはできません。
+#
+#以下は、バックアップデータをリストアする実行例です。リストアはノードを停止した状態で実行します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ mv ${GS_HOME}/data/*.{dat,log} ${GS_HOME}/temp    # データベースファイルの移動
+#$ gs_restore 20130521_backup                        # リストア
+##+END_EXAMPLE
+#
+#As a result, the following operations are performed.
+#1) バックアップディレクトリ( =/var/lib/gridstore/backup= )の下にある、20130521_backupディレクトリから、
+#   バックアップファイル群をデータディレクトリ( =/var/lib/gridstore/data= )にコピーする。
+#
+#この例では、説明の便宜上、バックアップディレクトリは =/var/lib/gridstore/backup= 、
+#データディレクトリは =/var/lib/gridstore/data= でしたが、
+#実際の運用では、システムの構成に合わせて適切なディレクトリに変更してください。
+#([[#other_params][その他のパラメータ]]を参照)
+#
+#リストア完了後、ノードを通常の起動と同じ手順で起動し、クラスタ参加させてください。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_startnode
+#...
+#$ gs_joincluster -c [setup_cluster_name] -n 1 -u admin/admin
+#...
+##+END_EXAMPLE
+#
+#起動後、ノードはリストアで配置されたデータベースファイル(バックアップファイル群)を読み込みます。
+#読み込み完了後、ノードはサービスを開始します。
+#
+#
+#*[Note]*
+#- クラスタ定義ファイルの、パーティション数と処理並列度のパラメータに注意が必要です。
+#  バックアップしたノードの設定値とリストアするノードの設定値は同一にしてください。同一でないと正しくノードが起動できません。
+#- バックアップした状態を正しくリストアしたい場合、バックアップ、リストアの作業をクラスタ全体で行う必要があります。
+#- 仮に、一部ノードをリストアしたとしても、それらノードをバックアップ時点の状態に戻すことはできません。リストア後、データを利用するためには稼働中のクラスタに参加させる必要がありますが、バックアップ後にクラスタでデータ更新されていた場合には、リストアしたデータはクラスタの(更新された)データで更新されてしまいます。
+#- 特に、バックアップを作成した時点からクラスタの構成が変化している場合には、リストアの効果がありません。そのノードをクラスタに参加させると自律的にデータを再配置するので、リストアしても高い確率でデータが無効になります。
+#- バックアップ情報ファイルの情報が欠けている場合、または内容を改変した場合は、ノードはサービスを開始できません。
+#
+#
+#** クラスタへのノード増設／切り離し
+#
+#*** 稼働中のクラスタにノードを増設する
+#
+#稼働中のGridDBクラスタに新たにノードを増設します。ノードの増設コマンドは、構成ノード数(クラスタ構成gs_joincluster時に指定した数）を超えて、クラスタにノードを追加したい際に利用します
+#
+#稼働中のクラスタに新たにノードを増設する場合、以下の手順で操作を行います。
+#
+#- クラスタが稼動していることを確認します。
+#- クラスタの稼動情報を確認します。
+#- 増設したいノードを起動します。
+#  + 増設したいノードのクラスタ定義ファイルが、ノードを追加したいクラスタの他のノードのものと同一であることを確認します。
+#- 「増設したいノード」にノード増設コマンドを実行します。
+#  + 増設したいノードのクラスタ情報をgs_statコマンドで取得して、クラスタ状態がFOLLOWERになっていれば、クラスタに参加できています。
+#
+#ノードを増設するには、以下のコマンドを実行します。
+#
+# - gs_appendcluster --cluster 接続サーバ：ポート  [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD
+# 
+#clusterオプションには「ノードを追加したいクラスタを構成しているいずれかのノード」のサーバアドレスとポート(管理REST用)を指定します。
+#以下は、クラスタに新たにノードを追加する具体例です。
+#
+#追加対象のクラスタの状態を確認します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_stat -s 192.168.33.29:10040  -u admin/admin
+#{
+#        :
+#    "cluster":{                          //クラスタ関連
+#        "activeCount":5,                   //有効ノード数
+#        "clusterName":"function_1",        //クラスタ名
+#        "clusterStatus":"MASTER",          //クラスタ状態
+#        "designatedCount":5,               //構成ノード数（既定ノード数）
+#        :
+#        
+##+END_EXAMPLE
+#クラスタの追加は構成ノード=有効ノード数（現在クラスタに参加している台数）の場合に使用できます。
+#構成ノード数>有効ノード数の場合、クラスタへのノード追加はgs_joincluster(クラスタ構成への参加）を用います。
+#
+#追加したいノードを起動するマシン上で以下を実行します。
+#ノードを追加したいクラスタに参加しているノードのいずれか1台のサーバアドレスおよびポート(管理REST用)を指定します（ノードがマスタである必要はありません）。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_startnode
+#$ gs_appendcluster --cluster 192.168.33.29:10040 -u admin/admin
+##+END_EXAMPLE
+#
+#ノードを追加後、構成ノード数および、有効ノード数の数が変更されています。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_stat  -u admin/admin
+#{
+#            :
+#    "cluster":{                                 //クラスタ関連
+#        "activeCount":6,                        //有効ノード数
+#        "clusterName":"function_1",             //クラスタ名
+#        "clusterStatus":"MASTER",               //クラスタ状態
+#        "designatedCount":6,                    //構成ノード数（既定ノード数）
+#            :
+#}
+##+END_EXAMPLE
+#
+#
+#*[Note]*
+#- クラスタを停止し、再起動する場合の構成ノード数として使用しますので、クラスタの拡張を実行した際は、gs_statコマンドで構成ノード数を確認してください。
+#- 無停止でのGridDBクラスタの拡張(ノードの増設)は1台ずつ行うことになります。
+#- 大規模な拡張を行いたい場合は、一旦クラスタを停止させた後で、構成ノード数に拡張後のノード数を指定してクラスタを再構成してください。
+#
+#*** 稼働中のクラスタからノードを離脱させる（クラスタの縮小）
+#
+#稼働中のGridDBクラスタからノードを1台離脱させます。
+#
+#稼働中のクラスタから任意のノード1台を離脱させたい場合、以下の手順で操作を行います。
+#
+#- クラスタが稼動していることを確認します。
+#- クラスタから離脱させたいノードに、クラスタ離脱コマンドを実行します。
+#
+#クラスタからノードを離脱させるには、以下のコマンドを実行します。
+#
+#  - gs_leavecluster [-s CONNECTION_SERVER:PORT] [-f] -u USERNAME/PASSWORD
+#
+#以下は、クラスタからノード1台を離脱させる具体例です。
+#
+#クラスタから離脱させたいノードを起動しているマシン上で以下を実行します。
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_leavecluster -u admin/admin
+##+END_EXAMPLE
+#
+#*[Note]*
+#- 指定したノードを離脱させるとデータロストが起こる可能性がある場合、クラスタの縮小は行えません。強制的にノードを離脱させたい場合は、-fオプションを使用してください。
+#- 無停止でのGridDBクラスタの縮小は1台ずつ行うことになります。
+#- クラスタに参加しているノード数が構成ノード数の半数に満たなくなると、クラスタは停止します。大規模な縮小を行いたい場合は、一旦クラスタを停止させた後で、構成ノード数に縮小後のノード数を指定してクラスタ#を再構成してください。大規模な縮小を行うと、データロストが起こる可能性が高くなります。
+#
+#
+#** Software Update
+#
+#*** Updating Software
+#
+#Update software, following the steps below:
+#
+#1. Stop the cluster.
+#2. Stop nodes.
+#3. Just in case, save / copy definition files, database files and event log files.
+#4. Update software.
+#5. Start nodes.
+#6. Configure the cluster.
+#
+#Below is shown an example of executing the command on a computer on which a node runs.
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_stopcluster -u admin/admin
+#$ gs_stopnode -u admin/admin
+#$ cp -rp /var/lib/gridstore/data /xxx/shelter  # 念のためコピー
+#$ cp -rp /var/lib/gridstore/log /xxx/shelter   # 念のためコピー
+#$ cp -rp /var/lib/gridstore/conf /xxx/shelter  # 念のためコピー
+#$ su
+## rpm -Uvh gridstore-server-Y.Y.Y-RH.x86_64.rpm
+## rpm -Uvh gridstore-client-Y.Y.Y-RH.x86_64.rpm
+## rpm -Uvh gridstore-docs-Y.Y.Y-RH.x86_64.rpm
+## exit
+#$ gs_startnode
+#$ gs_joincluster -c setup_cluster_name -u admin/admin
+##+END_EXAMPLE
+#
+#※Y.Y.Y：更新するGridDBのバージョン
+#
+#** Actions to Be Taken in the Event of a Failure
+#
+#障害の種類や対応方法の詳細については『GridDB バックアップガイド』([[file:GridDB_BackupGuide.html][GridDB_BackupGuide.html]])を参照ください。
+#
+#*** Basic Flow
+#
+#Below is an flow of the actions that administrators should take in the event of a failure.
+#
+#1) First, confirm the operating state of the cluster and identify an isolated node.
+#2) Collect event log infomation from the isolated failure node.
+#3) Analyze event log information and identify a failure cause.
+#4) Remove the failure node and replace it with a new node.
+#
+#GridDB provides non-disruptive services by performing a fail-over in a cluster in the event of a failure. As long as any backup node (replica) is active, GridDB continue a fail-over. If no backup node is left, an error will occur.
+#
+#GridDB performs the following operations in the event of a failure.
+#
+#1. Automatically isolates a failure node from the cluster, if a failure occurs.
+#2. Performs a fail-over to an existing backup node replacing the isolated failure node.
+#
+#*** Confirm the Operating Status of the Cluster
+#
+#You can confirm the status of a node by the "gs_stat" command. Confirm the statuses of all nodes individually.
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_stat -u admin/admin
+#{
+#                ：
+#    "cluster": {
+#                ：
+#        "nodeStatus": "ACTIVE",
+#                ：
+#}
+## Execute the command for each node repeatedly.
+##+END_EXAMPLE
+#
+#Confirm the value of /cluster/nodeStatus in the result. The node in any of the following statuses can be a failure node.
+#
+#- Node isolated unexpectedly
+#  + When its status is INACTIVE, DEACTIVATING, ABNORMAL, or NORMAL_SHUTDOWN.
+#- Node which does not return a result
+#
+#*** Collecting Event Log Information from a Failure Node
+#
+#Collect information from a failure node to analyze the cause of a failure. Use the command below to collect the most recent event logs.
+#
+#  - gs_logs [-s CONNECTION_SERVER:PORT]  -u USERNAME/PASSWORD
+#
+#Below is shown an example of executing the command on a computer on which a node runs.
+#
+#[Example of command execution]
+##+BEGIN_EXAMPLE
+#$ gs_logs -u admin/admin
+#2015-03-20T10:07:47.219+0900 host01 22962 INFO CHECKPOINT_SERVICE [30902:CP_STATUS] [CP_START] mode=NORMAL_CHECKPOINT, backupPath=
+#  ：
+#  ：
+##+END_EXAMPLE
+#
+#The event log is a list of character strings of event information. The format of event information is below:
+#
+#- Time stamp, Machine name, Thread ID, Event type, Event category, Source file name, Source method, Source line number (followed by other information)(※)
+#(※)改行を含む場合は、改行後の最初の文字にスペースが付与されます
+#
+#
+#Obtain failure information from the collected event log information and identify the cause of the failure. For detail on failure cause analysis, please contact the service staff.
+#
+#*[Note]*
+#  - More than one event log file exists because logs are to be rotated. The "gs_logs" command displays the information in the current event log file only.
+#
+#
+#*** Replacing a Failure Node
+#
+#Separate from the network the machine on which a failure node runs. Next, install and set up GridDB on a new machine and newly join a created node to the cluster. Then, as shown in "Adding a Node to the Cluster," the cluster will reallocate data automatically, including a newly joined node, and after reallocation completes, the newly joined node will start services.
+#
+#+END_COMMENT
+
+* Notice
+The following notice are only for community edition.
+- The compression function is not supported.
+- Only the very simple user authentication is supported. 
+- Only one database called "public" which all the registered users can access is supported. 
+- Default building environment repeals the trigger function. Add the following option in build to enable a trigger function.
+#+BEGIN_EXAMPLE
+  $ ./configure --enable-activemq
+#+END_EXAMPLE
+
+* Annex
+
+
+#+BEGIN_COMMENT
+#以下のX.X.Xは、GridDBのバージョンを表します。
+#+END_COMMENT
+
+** Parameter List
+# <<param_list>>
+
+The list of parameters in the node definition file and cluster definition file in GridDB are shown below.
+
+*** Node definition file(gs_node.json)
+
+#+BEGIN_COMMENT
+##+ATTR_HTML: border="2"
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| Parameter                     | Data type | Meaning                                      |    Default   |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /dataStore/dbPath              | string   | Directory storing database files          |          "data" |
+#| /dataStore/backupPath          | string   | Backup file directory          |        "backup" |
+#| /dataStore/storeMemoryLimit    | string   | Memory buffer size                      |        "1024MB" |
+#| /dataStore/storeWarmStart      | boolean  | Warm start during restart (false: invalid, true: valid)|               true |
+#| /dataStore/concurrency         | int      | Concurrency level                                |               4 |
+#| /dataStore/logWriteMode        | int      | Log write mode                        |               1 |
+#| /dataStore/persistencyMode     | string   | Persistence mode                              |        "NORMAL" |
+#| /dataStore/affinityGroupSize   | int      | Number of data affinity groups                    |               4 |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /checkpoint/checkpointInterval | string   | Checkpoint execution interval                  |         "1200s" |
+#| /checkpoint/checkpointMemoryLimit | string      | Checkpoint memory buffer size|  "1024MB" |
+#| /checkpoint/useParallelMode    | boolean      | Checkpoint parallel operation (false: invalid, true: valid)|           false |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /cluster/serviceAddress        | string   | Listening address for cluster management  |     "127.0.0.1" |
+#| /cluster/servicePort           | int      | Listening port for cluster management    |           10010 |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /sync/serviceAddress           | string   | Reception address used in data synchronization          |     "127.0.0.1" |
+#| /sync/servicePort              | int      | Reception port used in data synchronization            |           10020 |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /system/serviceAddress         | string   | Connection address of operational command            |     "127.0.0.1" |
+#| /system/servicePort            | int      | Connection port of operational command              |           10040 |
+#| /system/eventLogPath           | string   | Event log file output directory    |           "log" |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /transaction/serviceAddress    | string   | Reception address of transaction process        |     "127.0.0.1" |
+#| /transaction/servicePort       | int      | Reception port of transaction process          |           10001 |
+#| /transaction/connectionLimit   | int      | Upper limit of connections                      |            5000 |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /trace/default                 | string   | Event log output level                    |   "LEVEL_ERROR" |
+#| /trace/dataStore               | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/collection              | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/timeSeries              | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/chunkManager            | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/objectManager           | string   |                                           |    "LEVEL_INFO" |
+#| /trace/checkpointFile          | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/checkpointService       | string   |                                           |    "LEVEL_INFO" |
+#| /trace/logManager              | string   |                                           | "LEVEL_WARNING" |
+#| /trace/clusterOperation        | string   |                                           |    "LEVEL_INFO" |
+#| /trace/clusterService          | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/syncService             | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/systemService           | string   |                                           |    "LEVEL_INFO" |
+#| /trace/transactionManager      | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/transactionService      | string   |                                           |   "LEVEL_ERROR" |
+#| /trace/transactionTimeout      | string   |                                           | "LEVEL_WARNING" |
+#| /trace/sessionTimeout          | string   |                                           | "LEVEL_WARNING" |
+#| /trace/replicationTimeout      | string   |                                           | "LEVEL_WARNING" |
+#| /trace/recoveryManager         | string   |                                           |    "LEVEL_INFO" |
+#| /trace/eventEngine             | string   |                                           | "LEVEL_WARNING" |
+#| /trace/triggerService          | string   |                                           |   "LEVEL_ERROR" |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#+END_COMMENT
+#+ATTR_HTML: border="2"
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| Parameter                     | Data type | Meaning                                      |    Default   |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /dataStore/dbPath              | string   | Directory storing database files          |          "data" |
+| /dataStore/storeMemoryLimit    | string   | Memory buffer size                      |        "1024MB" |
+| /dataStore/concurrency         | int      | Concurrency level                                |               1 |
+| /dataStore/logWriteMode        | int      | Log write mode                        |               1 |
+| /dataStore/persistencyMode     | string   | Persistence mode                              |        "NORMAL" |
+| /dataStore/affinityGroupSize   | int      | Number of data affinity groups                    |               4 |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /checkpoint/checkpointInterval | string   | Checkpoint execution interval                  |         "60s" |
+| /checkpoint/checkpointMemoryLimit | string      | Checkpoint memory buffer size|  "1024MB" |
+| /checkpoint/useParallelMode    | boolean      | Checkpoint parallel operation (false: invalid, true: valid)|           false |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /cluster/serviceAddress        | string   | Listening address for cluster management  |     "127.0.0.1" |
+| /cluster/servicePort           | int      | Listening port for cluster management    |           10010 |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /sync/serviceAddress           | string   | Reception address used in data synchronization          |     "127.0.0.1" |
+| /sync/servicePort              | int      | Reception port used in data synchronization            |           10020 |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /system/serviceAddress         | string   | Connection address of operational command            |     "127.0.0.1" |
+| /system/servicePort            | int      | Connection port of operational command              |           10040 |
+| /system/eventLogPath           | string   | Event log file output directory    |           "log" |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /transaction/serviceAddress    | string   | Reception address of transaction process        |     "127.0.0.1" |
+| /transaction/servicePort       | int      | Reception port of transaction process          |           10001 |
+| /transaction/connectionLimit   | int      | Upper limit of connections                      |            5000 |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+| /trace/default                 | string   | Event log output level                    |   "LEVEL_ERROR" |
+| /trace/dataStore               | string   |                                           |   "LEVEL_ERROR" |
+| /trace/collection              | string   |                                           |   "LEVEL_ERROR" |
+| /trace/timeSeries              | string   |                                           |   "LEVEL_ERROR" |
+| /trace/chunkManager            | string   |                                           |   "LEVEL_ERROR" |
+| /trace/objectManager           | string   |                                           |    "LEVEL_INFO" |
+| /trace/checkpointFile          | string   |                                           |   "LEVEL_ERROR" |
+| /trace/checkpointService       | string   |                                           |    "LEVEL_INFO" |
+| /trace/logManager              | string   |                                           | "LEVEL_WARNING" |
+| /trace/clusterOperation        | string   |                                           |    "LEVEL_INFO" |
+| /trace/clusterService          | string   |                                           |   "LEVEL_ERROR" |
+| /trace/syncService             | string   |                                           |   "LEVEL_ERROR" |
+| /trace/systemService           | string   |                                           |    "LEVEL_INFO" |
+| /trace/transactionManager      | string   |                                           |   "LEVEL_ERROR" |
+| /trace/transactionService      | string   |                                           |   "LEVEL_ERROR" |
+| /trace/transactionTimeout      | string   |                                           | "LEVEL_WARNING" |
+| /trace/sessionTimeout          | string   |                                           | "LEVEL_WARNING" |
+| /trace/replicationTimeout      | string   |                                           | "LEVEL_WARNING" |
+| /trace/recoveryManager         | string   |                                           |    "LEVEL_INFO" |
+| /trace/eventEngine             | string   |                                           | "LEVEL_WARNING" |
+| /trace/triggerService          | string   |                                           |   "LEVEL_ERROR" |
+|--------------------------------+----------+-------------------------------------------+-----------------|
+
+#+BEGIN_COMMENT
+#GridDB NewSQL DBで上記に加えて利用するパラメータは以下のとおりです。
+#
+##+ATTR_HTML: border="2"
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| Parameter                     | Data type | Meaning                                      |    Default   |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /sql/serviceAddress            | string   | JDBC/ODBCクライアント接続用の受信アドレス      |     "127.0.0.1" |
+#| /sql/servicePort               | int      | JDBC/ODBCクライアント接続用の受信ポート        |           20001 |
+#| /sql/connectionLimit           | int      | Upper limit of connections                      |            5000 |
+#| /sql/concurrency               | int      | Concurrency level                      |            5 |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#| /trace/sqlService              | string   | イベントログ出力レベル                    |   "LEVEL_ERROR" |
+#|--------------------------------+----------+-------------------------------------------+-----------------|
+#+END_COMMENT
+
+*** Cluster definition file(gs_cluster.json)
+
+#+ATTR_HTML: border="2"
+|-----------------------------------------+----------+---------------------------------------------------+--------------|
+| Parameter                              | Data type | Meaning                                              | Default |
+|-----------------------------------------+----------+---------------------------------------------------+--------------|
+| /dataStore/partitionNum                 | int      | Number of partitions                                  |          128 |
+| /dataStore/storeBlockSize               | string   | Block size("64KB", "1MB")                     |       "64KB" |
+|-----------------------------------------+----------+---------------------------------------------------+--------------|
+| /cluster/clusterName                    | string   | Cluster name                                        |           "" |
+| /cluster/replicationNum                 | int      | Number of replicas                                        |            2 |
+| /cluster/notificationAddress            | string   | Multicast address for cluster management    |  "239.0.0.1" |
+| /cluster/notificationPort               | int      | Multicast port for cluster management      |        20000 |
+| /cluster/notificationInterval           | string   | Multi-cast interval for cluster administration          |         "5s" |
+| /cluster/heartbeatInterval              | string   | Heart beat interval                                  |         "5s" |
+| /cluster/loadbalanceCheckInterval       | string   | Load balance check interval                        |       "180s" |
+|-----------------------------------------+----------+---------------------------------------------------+--------------|
+| /sync/timeoutInterval                   | string   | Short-term synchronization timeout time                          |        "30s" |
+|-----------------------------------------+----------+---------------------------------------------------+--------------|
+| /transaction/notificationAddress        | string   | Multicast address to clients          |  "239.0.0.1" |
+| /transaction/notificationPort           | int      | Multicast port to clients            |        31999 |
+| /transaction/notificationInterval       | string   | Multi-cast interval to client                |         "5s" |
+| /transaction/replicationTimeoutInterval | string   | Replication/timeout time                |        "10s" |
+| /transaction/replicationMode            | int      | Replication method (0: non-synchronous, 1: quasi-synchronous)          |            0 |
+|-----------------------------------------+----------+---------------------------------------------------+--------------|
+
+#+BEGIN_COMMENT
+#GridDB NewSQL DBで上記に加えて利用するパラメータは以下のとおりです。
+#
+##+ATTR_HTML: border="2"
+#|--------------------------------+----------+-------------------------------------------------+-----------------|
+#| Parameter                     | Data type | Meaning                                            |    Default   |
+#|--------------------------------+----------+-------------------------------------------------+-----------------|
+#| /sql/notificationAddress       | string   | Multicast address to JDBC/ODBC clients    |     "239.0.0.1" |
+#| /sql/notificationPort          | int      | Multicast port to JDBC/ODBC clients      |           41999 |
+#| /sql/notificationInterval      | string   | JDBC/ODBCクライアントへのマルチキャスト間隔 |             "5s" |
+#|--------------------------------+----------+-------------------------------------------------+-----------------|
+#+END_COMMENT
+
+
+** Build/execution method
+
+An example on how to build and execute a program is shown.
+
+#+BEGIN_COMMENT
+#サンプルプログラムはドキュメントパッケージ内のZIPファイルに
+#格納されていますので、適宜解凍してください。
+#+END_COMMENT
+
+*[Note]*
+- The user and password in the sample program need to be changed appropriately.
+
+#+BEGIN_COMMENT
+#① gsadmでログインする。
+#
+#② プログラムをビルドし実行する。
+#+END_COMMENT
+
+*[For NoSQL DB]*
+
+For Java
+
+1. Setting the environmental variables
+2. Copy the sample program to the gsSample directory
+3. Build
+4. Run
+
+#+BEGIN_COMMENT
+##+BEGIN_EXAMPLE
+#$ export CLASSPATH=${CLASSPATH}:/usr/share/java/gridstore.jar
+#$ mkdir gsSample
+#$ cp /usr/gridstore-X.X.X/docs/sample/program/Sample1.java gsSample/.
+#$ javac gsSample/Sample1.java
+#$ java gsSample/Sample1 239.0.0.1 31999 setup_cluster_name
+##+END_EXAMPLE
+#+END_COMMENT
+#+BEGIN_EXAMPLE
+$ export CLASSPATH=${CLASSPATH}:$GS_HOME/bin/gridstore.jar
+$ mkdir gsSample
+$ cp $GS_HOME/docs/sample/program/Sample1.java gsSample/.
+$ javac gsSample/Sample1.java
+$ java gsSample/Sample1 239.0.0.1 31999 setup_cluster_name admin your_password
+#+END_EXAMPLE
+
+#+BEGIN_COMMENT
+#Cの場合
+#
+#1. 環境変数の設定
+#2. サンプルプログラムをコピー
+#3. sample2.cファイルの最終行に =void main(int argc,char *argv[]){ sample2(argv[1],argv[2],argv[3]);}= の追加
+#4. ビルド
+#5. 実行
+#
+#【出力例】
+##+BEGIN_EXAMPLE
+#$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/lib64
+#$ cp /usr/gridstore-X.X.X/docs/sample/program/sample2.c .
+#$ echo "void main(int argc,char *argv[]){ sample2(argv[1],argv[2],argv[3]);}" >> sample2.c
+#$ gcc -I/usr/gridstore-X.X.X/lib sample2.c -lgridstore
+#$ a.out 239.0.0.1 31999 setup_cluster_name
+##+END_EXAMPLE
+#
+#引数は、クライアントとクラスタとのインタフェースアドレス、ポート、クラスタ名の3つを指定して下さい。
+#
+#*【NewSQL DBの場合】*
+#
+#1. 環境変数の設定 
+#2. サンプルプログラムをコピー 
+#3. ビルド 
+#4. 実行 
+#
+##+BEGIN_EXAMPLE
+#$ export CLASSPATH=${CLASSPATH}:/usr/share/java/gridstore-jdbc.jar
+#$ cp /usr/gridstore-X.X.X/docs/sample/program/SampleJDBC.java .
+#$ javac SampleJDBC.java
+#$ java SampleJDBC 239.0.0.1 41999 setup_cluster_name
+##+END_EXAMPLE
+#
+#引数は、JDBC/ODBCクライアントへのマルチキャスト用アドレス、ポート、クラスタ名の3つを指定して下さい。
+#
+#*[Note]*
+#- sample2が実行済みである必要があります。
+#
+#【出力例】
+##+BEGIN_EXAMPLE
+#DB Connection Start
+#Start
+#1414054670561|0|100.0|
+#End
+#DB Connection Close
+##+END_EXAMPLE
+#+END_COMMENT
+
+
+* Trademark
+
+ - GridDB is a trademark of Toshiba Digital Solutions Corporation.
+ - Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ - Linux is a trademark of Linus Torvalds.
+ - Other product names are trademarks or registered trademarks of the respective owners.
+
+#+BEGIN_COMMENT
+#* Contact Information
+#  
+#For information about the use of this product, please contact the basic support service staff.
+#+END_COMMENT
+
+                            Copyright (C) 2017 TOSHIBA Digital Solutions Corporation
+

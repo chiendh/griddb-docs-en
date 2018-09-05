@@ -1,0 +1,2040 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>GridDB API Reference</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta name="title" content="GridDB API Reference"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2018-07-17T14:00+0900"/>
+<meta name="author" content=""/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Helvetica; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: Courier New, Courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  del { color: gray; }
+  /*]]>*/-->
+    </style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+
+</head>
+<body>
+
+<div id="preamble">
+
+</div>
+
+<div id="content">
+<h1 class="title">GridDB API Reference</h1>
+
+
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Introduction</a></li>
+<li><a href="#sec-2">2 Overview</a>
+<ul>
+<li><a href="#sec-2-1">2.1 Terms</a></li>
+<li><a href="#sec-2-2">2.2 Type</a>
+<ul>
+<li><a href="#sec-2-2-1">2.2.1 Primitive Types</a></li>
+<li><a href="#sec-2-2-2">2.2.2 Composite Types</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 TQL Syntax and Calculation Functions</a>
+<ul>
+<li><a href="#sec-3-1">3.1 Basic Syntax</a></li>
+<li><a href="#sec-3-2">3.2 Syntax of Conditional Expressions and Calculation Functions</a>
+<ul>
+<li><a href="#sec-3-2-1">3.2.1 Values</a></li>
+<li><a href="#sec-3-2-2">3.2.2 Precedence of Operators</a></li>
+<li><a href="#sec-3-2-3">3.2.3 Comparison Operations</a></li>
+<li><a href="#sec-3-2-4">3.2.4 Logical Operations</a></li>
+<li><a href="#sec-3-2-5">3.2.5 String Operations</a></li>
+<li><a href="#sec-3-2-6">3.2.6 Numerical Operations</a></li>
+<li><a href="#sec-3-2-7">3.2.7 Time-Type Operations</a></li>
+<li><a href="#sec-3-2-8">3.2.8 Array-Type Operations</a></li>
+<li><a href="#sec-3-2-9">3.2.9 Spatial-Type Operations</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-3">3.3 Selection Expressions</a>
+<ul>
+<li><a href="#sec-3-3-1">3.3.1 Basic Syntax</a></li>
+<li><a href="#sec-3-3-2">3.3.2 Aggregation Operations - General</a></li>
+<li><a href="#sec-3-3-3">3.3.3 Aggregation Operations - Time Series</a></li>
+<li><a href="#sec-3-3-4">3.3.4 Selection and Interpolation Operations on Time-Series Data</a></li>
+<li><a href="#sec-3-3-5">3.3.5 Row group selection operation with the maximum value/minimum value</a></li>
+</ul>
+</li>
+<li><a href="#sec-3-4">3.4 Sorting of search results (ORDER BY)</a></li>
+<li><a href="#sec-3-5">3.5 Number of search results found, relative position specification (LIMIT, OFFSET)</a></li>
+<li><a href="#sec-3-6">3.6 Obtaining Execution Plans and Analyzing Execution Results</a>
+<ul>
+<li><a href="#sec-3-6-1">3.6.1 EXPLAIN</a></li>
+<li><a href="#sec-3-6-2">3.6.2 EXPLAIN ANALYZE</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-4">4 Trigger function</a>
+<ul>
+<li><a href="#sec-4-1">4.1 Functional overview</a></li>
+<li><a href="#sec-4-2">4.2 API overview</a></li>
+<li><a href="#sec-4-3">4.3 Message format</a></li>
+<li><a href="#sec-4-4">4.4 Precautions</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">5 API (Java)</a>
+<ul>
+<li><a href="#sec-5-1">5.1 API List (Java)</a></li>
+<li><a href="#sec-5-2">5.2 API Samples (Java)</a>
+<ul>
+<li><a href="#sec-5-2-1">5.2.1 Sample of Collection Operations (Java)</a></li>
+<li><a href="#sec-5-2-2">5.2.2 Sample of TimeSeries Operations (Java) - Storage and Extraction of Specific Range</a></li>
+<li><a href="#sec-5-2-3">5.2.3 Sample of TimeSeries Operations (Java) - Search and Aggregation</a></li>
+<li><a href="#sec-5-2-4">5.2.4 Sample of Collection Operations (Java) - Schema definition using container information</a></li>
+<li><a href="#sec-5-2-5">5.2.5 Sample of Collection Operations (Java) - Bulk operation on multiple containers</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-6">6 API (C)</a>
+<ul>
+<li><a href="#sec-6-1">6.1 API List (C)</a></li>
+<li><a href="#sec-6-2">6.2 API Samples (C)</a>
+<ul>
+<li><a href="#sec-6-2-1">6.2.1 Sample of Collection Operations (C)</a></li>
+<li><a href="#sec-6-2-2">6.2.2 Sample of TimeSeries Operations (C) - Storage and Extraction of Specific Range</a></li>
+<li><a href="#sec-6-2-3">6.2.3 Sample of TimeSeries Operations (C) - Search and Aggregation</a></li>
+<li><a href="#sec-6-2-4">6.2.4 Sample of Collection Operations (C) - Schema definition using container information</a></li>
+<li><a href="#sec-6-2-5">6.2.5 Sample of Collection Operations (C) - Bulk operation on multiple containers</a></li>
+</ul></li>
+</ul>
+</li>
+<li><a href="#sec-7">7 Annex</a>
+<ul>
+<li><a href="#sec-7-1">7.1 Range of values</a>
+<ul>
+<li><a href="#sec-7-1-1">7.1.1 Values that may be adopted by basic datatypes</a></li>
+</ul>
+</li>
+<li><a href="#sec-7-2">7.2 System limiting values</a></li>
+</ul>
+</li>
+<li><a href="#sec-8">8 Trademark</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+
+
+<p>
+This manual describes how to use APIs and a query language required for programming using GridDB, a large-scale distributed DB.
+</p>
+<p>
+Java- and C-based APIs are available for management operations and basic data extractions in GridDB. You can use a dedicated query language TQL for operations with more complicated conditions.
+</p>
+<p>
+Note. Following functions are supported by only Standard/Advanced/Vector edition.
+</p>
+<ul>
+<li>Geometry type and spatial index
+</li>
+<li>Time series data compression of TimeSeries Container
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Overview</h2>
+<div class="outline-text-2" id="text-2">
+
+
+
+</div>
+
+<div id="outline-container-2-1" class="outline-3">
+<h3 id="sec-2-1"><span class="section-number-3">2.1</span> Terms</h3>
+<div class="outline-text-3" id="text-2-1">
+
+<p>Major terms are as follows:
+</p>
+<ul>
+<li>Node
+<ul>
+<li>A server process which performs data management in GridDB.
+
+</li>
+</ul>
+
+</li>
+<li>Row
+<ul>
+<li>A piece of data managed by GridDB, which is a unit of data consisting of a key and multiple values.
+
+</li>
+</ul>
+
+</li>
+<li>Container
+<ul>
+<li>A receptacle which stores a set of Rows. Two types are available: Collection and TimeSeries.
+</li>
+<li>A Row has one field for each Column. Each field consistently has one value. NULL can be set as a field value.
+</li>
+<li>A Container or Column name is composed of a sequence of one or more ASCII alphanumeric characters and underscores (_). However, the first character must not be numeric. And the names are case-insensitive.
+
+</li>
+</ul>
+
+</li>
+<li>Collection
+<ul>
+<li>A type of Container storing and managing Rows. A Row can have a key and also need not have any key. A key can be assigned to a single string or integer (INTEGER or LONG type only), or time-type data. A key cannot be set to NULL.
+
+</li>
+</ul>
+
+</li>
+<li>TimeSeries
+<ul>
+<li>A type of Container storing and managing Rows with a time-type key, provided with a special function to operate time-series data. A key corresponds to the time of a time series row. A key cannot be set to NULL.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-2-2" class="outline-3">
+<h3 id="sec-2-2"><span class="section-number-3">2.2</span> Type</h3>
+<div class="outline-text-3" id="text-2-2">
+
+<p>This section shows the definitions of types specifying the value constraints for fields and query operations.
+</p>
+
+</div>
+
+<div id="outline-container-2-2-1" class="outline-4">
+<h4 id="sec-2-2-1"><span class="section-number-4">2.2.1</span> Primitive Types</h4>
+<div class="outline-text-4" id="text-2-2-1">
+
+<p>Here are shown the definitions of primitive types which cannot be represented by a combination of any other types.
+</p>
+<ul>
+<li id="sec-2-2-1-1">Boolean type (BOOL)<br/>
+Represents the values: TRUE or FALSE.
+
+</li>
+</ul>
+<ul>
+<li id="sec-2-2-1-2">String type (STRING)<br/>
+Represents a sequence of zero or more Unicode code points (characters) excluding the NULL character (U+0000). Refer to the Annex <a href="#sec-7-2">System limiting values</a> for the upper limit size.
+</li>
+</ul>
+<ul>
+<li id="sec-2-2-1-3">Integer type<br/>
+Represents integer values as follows:
+<ul>
+<li>BYTE: -2<sup>7</sup> to 2<sup>7</sup>-1 (8-bit)
+</li>
+<li>SHORT: -2<sup>15</sup> to -2<sup>15</sup>-1 (16-bit)
+</li>
+<li>INTEGER: -2<sup>31</sup> to -2<sup>31</sup>-1 (32-bit)
+</li>
+<li>LONG: -2<sup>63</sup> to -2<sup>63</sup>-1 (64-bit)
+</li>
+</ul>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-2-2-1-4">Floating point type<br/>
+Represents the IEEE754 floating point numbers. The following types are available depending on the precision.
+<ul>
+<li>FLOAT: Single-precision type (32-bit)
+</li>
+<li>DOUBLE: Double-precision type (64-bit)
+</li>
+</ul>
+
+
+<p>
+Note. In principle, arithmetic precision conforms to the IEEE754 specifications; however, it might vary depending on the runtime environment.
+</p>
+</li>
+</ul>
+<ul>
+<li id="sec-2-2-1-5">Time type (TIMESTAMP)<br/>
+Represents the combination of a date consisting of year, month and day, and a time consisting of hour, minute and second. Refer to the Annex <a href="#sec-7-1">Range of values</a> for the display range.
+
+</li>
+</ul>
+<ul>
+<li id="sec-2-2-1-6">Spatial type (GEOMETRY)<br/>
+Represents the spatial structure. Refer to GridDB Technical Reference for the upper limit size. It does not support non-numeric numbers (NAN) and positive and negative infinity (INF, -INF) as the number of coordinates represented by each structure.
+In addition, it is capable of storing SRID (Spatial Reference System Identifier) as an integer value, but does not support coordinate range limit by the coordinate system represented by the SRID and the coordinate conversion by the conversion of SRID.
+
+</li>
+</ul>
+<ul>
+<li id="sec-2-2-1-7">BLOB type<br/>
+Represents binary data, such as image and sound. Refer to the Annex <a href="#sec-7-2">System limiting values</a> for the upper limit size.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-2-2-2" class="outline-4">
+<h4 id="sec-2-2-2"><span class="section-number-4">2.2.2</span> Composite Types</h4>
+<div class="outline-text-4" id="text-2-2-2">
+
+
+<p>
+Here are shown the definitions of types which can be represented by a combination of primitive types.
+</p>
+<ul>
+<li id="sec-2-2-2-1">Array types<br/>
+
+<p>
+Represent a sequence of values. The following types are available for array values. The length of an array indicates the number of array elements. The minimum size is 0. Refer to the Annex <a href="#sec-7-2">System limiting values</a> for the upper limit size. The element of array cannot be set to NULL.
+</p><ul>
+<li>Boolean type
+</li>
+<li>String type
+</li>
+<li>Integer Type
+</li>
+<li>Floating point type
+</li>
+<li>Time type
+</li>
+</ul>
+
+
+
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> TQL Syntax and Calculation Functions</h2>
+<div class="outline-text-2" id="text-3">
+
+
+<p>
+TQL supports a query corresponding to the SQL SELECT statement which is required to select data to be fetched, deleted or updated. It does not support other than a selection query, such as manipulation of selected data, management of data structure and transaction processing.
+</p>
+
+</div>
+
+<div id="outline-container-3-1" class="outline-3">
+<h3 id="sec-3-1"><span class="section-number-3">3.1</span> Basic Syntax</h3>
+<div class="outline-text-3" id="text-3-1">
+
+
+<p>
+All queries are expressed by the syntax below:
+</p>
+
+
+
+<pre class="example">[EXPLAIN [ANALYZE]] SELECT (select expression) [FROM (Collection or TimeSeries name)]  [WHERE (conditional expression)] ORDER BY (Column name) [ASC|DESC] [, (Column name) [ASC|DESC]]* [LIMIT (number) [OFFSET (number)]]
+</pre>
+
+
+<p>
+A SELECT statement is used to narrow down Rows in a Collection or TimeSeries specified in the FROM clause according to the conditional expression in the WHERE clause and process the result set according to the select expression specifying target Column(s), a calculation formula, etc.
+</p>
+<p>
+If a target Collection or TimeSeries is already specified, you need to omit the FROM clause or specify the same name as the target in the FROM clause. You should note that the FROM clause is case-insensitive. If the WHERE clause is omitted, all the Rows of a target Collection or TimeSeries are selected.
+</p>
+<p>
+You can place EXPLAIN or EXPLAIN ANALYZE before a SELECT statement to obtain execution plan information and analysis information on execution results in relation to the SELECT statement. See the later section for more information.
+</p>
+<p>
+Unlike SQL, you cannot extract only specific Column(s) except for aggregation operations. Additionally, clauses corresponding to the following are not available.
+</p><ul>
+<li>GROUP BY
+</li>
+<li>HAVING
+</li>
+<li>DISTINCT
+</li>
+<li>FOR UPDATE (Note. can be carried out with the API)
+</li>
+<li>JOIN
+</li>
+</ul>
+
+
+<p>
+ASCII characters in the keywords of the basic syntax and the names of functions, operators and enumeration constants described in the later sections can be written in lower case.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-2" class="outline-3">
+<h3 id="sec-3-2"><span class="section-number-3">3.2</span> Syntax of Conditional Expressions and Calculation Functions</h3>
+<div class="outline-text-3" id="text-3-2">
+
+
+<p>
+This section shows the definitions of the syntax of conditional expressions used in the WHERE clause and the operators and functions available in a conditional expression. When NULL is included in operator or function, it returns NULL unless otherwise noted.
+</p>
+
+</div>
+
+<div id="outline-container-3-2-1" class="outline-4">
+<h4 id="sec-3-2-1"><span class="section-number-4">3.2.1</span> Values</h4>
+<div class="outline-text-4" id="text-3-2-1">
+
+
+<p>
+A value can be either a constant literal or a field of a specified Column in a Row under operation.
+</p>
+<ul>
+<li id="sec-3-2-1-1">Literal values<br/>
+A literal value can be either of the following:
+
+<ul>
+<li>Numeric type: A character string of decimal numbers. The notation of floating point numbers conforms to IEEE754. A double-type non-number, positive infinity and negative infinity are written as NaN, INF and -INF, respectively.
+</li>
+<li>String type: A character string enclosed in single quotation marks. In order to represent a single quotation mark within a character string, use two single quotation marks (the first single quotation mark is an escape character for the second). You cannot use a single quotation mark for any other purposes.
+</li>
+<li>NULL: It is written as NULL.
+</li>
+</ul>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-1-2">Field values<br/>
+To specify a field value held by a row under evaluation, either describe directly the corresponding column name or describe the column name enclosed within quotation marks “"”. Describe a column name enclosed within quotation marks “"”. By enclosing within quotation marks, columns with the same name as key words such as “SELECT” and “WHERE” can also be handled.  You should note that Column names are case-insensitive. Additionally, you cannot join a Column name and a Collection or TimeSeries name by "." etc.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-2" class="outline-4">
+<h4 id="sec-3-2-2"><span class="section-number-4">3.2.2</span> Precedence of Operators</h4>
+<div class="outline-text-4" id="text-3-2-2">
+
+
+<p>
+Operators are evaluated in the order below: Operators with equal precedence are evaluated in the left-to-right order in which they appear.
+</p><ol>
+<li>-(Unary)
+</li>
+<li>*, /, %
+</li>
+<li>-(Binary), +
+</li>
+<li>=, &gt;=, &gt;, &lt;=, &lt;, &lt;&gt;, LIKE
+</li>
+<li>NOT
+</li>
+<li>AND
+</li>
+<li>OR, XOR
+</li>
+</ol>
+
+
+<p>
+Round parentheses can be used to override the order of precedence and force some parts of an expression to be evaluated before others.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-3" class="outline-4">
+<h4 id="sec-3-2-3"><span class="section-number-4">3.2.3</span> Comparison Operations</h4>
+<div class="outline-text-4" id="text-3-2-3">
+
+
+<ul>
+<li id="sec-3-2-3-1">Type Constraints<br/>
+A combination of left and right operand types can be only Boolean-Boolean, String-String, numeric-numeric, or time-time. With regard to numeric types, if left and right operand types are different in precision, the type with a lower precision or a narrower representable value range will be converted to the one with a higher precision or a wider range. Magnitude comparison cannot be made between Boolean and Boolean types or String and String types.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-3-2">=, &gt;=, &gt;, &lt;=, &lt;, &lt;&gt;<br/>
+These operators produce a Boolean value representing the result of comparison; namely, "Equal to," "Greater than or equal to," "Greater than," "Less than or equal to," "Less than" and "Not equal to," respectively. However if either of operands is NULL, it returns NULL. In principle, arithmetic precision conforms to the IEEE754 specifications; however, it might vary depending on the runtime environment. GridDB assumes that NaN is equal to NaN and that NaN is greater than any other values.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-4" class="outline-4">
+<h4 id="sec-3-2-4"><span class="section-number-4">3.2.4</span> Logical Operations</h4>
+<div class="outline-text-4" id="text-3-2-4">
+
+
+<ul>
+<li id="sec-3-2-4-1">NOT, AND, OR, XOR<br/>
+These operators produce the result of negation, logical product, logical sum and exclusive logical sum, respectively. Operands of logical operations must be Boolean or NULL.
+
+<p>
+*****NOT
+If an operand is TRUE, it returns FALSE. If an operand is FALSE, it returns TRUE. If an operand is NULL, it returns NULL.
+</p>
+<p>
+*****AND
+If both operands are TRUE, it returns TRUE. If either of the operands is FALSE, it returns FALSE. Otherwise, it returns NULL.
+</p>
+<p>
+*****OR
+If both operands are FALSE, it returns FALSE. If either of the operands is TRUE, it returns TRUE. Otherwise, it returns NULL.
+</p>
+<p>
+*****XOR
+If both operands are TRUE or FALSE, it returns FALSE. If either of the operands is NULL, it returns NULL. Otherwise, it returns TRUE.
+</p>
+<p>
+In addition, a short evaluation (or minimum evaluation) is carried out in an AND or OR operation. That is, if the evaluation can be confirmed with the formula described first, the evaluation of the formula described later will not be conducted.
+For example,
+</p>
+
+
+<pre class="example">WHERE A=1 AND B=1
+</pre>
+
+<p>
+In this case, if A is 1, then B is deemed to be equal to 1, and if A is not 1, then the evaluation of B=1 need not be carried out.
+</p>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-5" class="outline-4">
+<h4 id="sec-3-2-5"><span class="section-number-4">3.2.5</span> String Operations</h4>
+<div class="outline-text-4" id="text-3-2-5">
+
+
+<ul>
+<li id="sec-3-2-5-1">CHAR_LENGTH(str)<br/>
+Returns the length of the specified string.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-5-2">CONCAT(str1, str2, &hellip;)<br/>
+Returns a new string obtained by concatenating all given strings. If NULL is included in the input, NULL will be ignored and the rest will be concatenated.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-5-3">str LIKE pattern [ESCAPE esc]<br/>
+Checks if the whole target string matches the specified pattern. The string matching is case-sensitive. It returns TRUE only if the matching is successful.
+
+<p>
+The following wildcards can be used for specifying a pattern.
+</p><ul>
+<li><i>%</i>: Matches an arbitrary string, including an empty string.
+</li>
+<li><i>_</i>: Matches a single arbitrary character.
+</li>
+</ul>
+
+<p>For example, the expression below returns TRUE for "RDB" and "RDBMS" but FALSE for "ORDB" and "DBMS".
+</p>
+
+
+<pre class="example">column LIKE '_DB%'
+</pre>
+
+<p>
+Wildcards can be placed at any arbitrary position(s) within a pattern. FALSE is always returned if an empty string is specified as a pattern.
+</p>
+<p>
+In order to search a wildcard character itself, specify an escape character in the ESCAPE clause. For example, the expression below returns TRUE for "10%" but FALSE for "10$%."
+</p>
+
+
+<pre class="example">column LIKE '10$%' ESCAPE '$'
+</pre>
+
+<p>
+The escape character must be a single character.
+</p>
+<p>
+You can specify either a Column name or a string literal as "str," "pattern" and "esc."
+</p>
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-5-4">SUBSTRING(str, start[, length])<br/>
+Extracts parts of a string.
+
+<p>
+"start" is the position where to start extraction of characters. The first character is at index 1. "length" is the number of characters to extract (0 or positive number). If "length" is omitted, it extracts all the characters from the "start" position to the end of the string. If "start" or "length" is out of index, it returns an empty string. You should note that "start" must be a positive number and "length" must be 0 or a positive number.
+</p>
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-5-5">UPPER(str), LOWER(str)<br/>
+Convert ASCII alphabetical characters within a string to upper-case and lower-case characters, respectively.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-6" class="outline-4">
+<h4 id="sec-3-2-6"><span class="section-number-4">3.2.6</span> Numerical Operations</h4>
+<div class="outline-text-4" id="text-3-2-6">
+
+
+<ul>
+<li id="sec-3-2-6-1">+, -(unary), -(binary), *, /, %<br/>
+Perform arithmetic operations; addition, negation, subtraction, multiplication, division and remainder, respectively. You should note that the remainder operator does not support floating point numbers. In floating point division, if a number other than 0 is divided by 0, the result is INF, and if 0 is divided by 0, the result is NaN. The operations on INF or NaN conform to IEEE754.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-6-2">ROUND(num)、FLOOR(num)、CEILING(num)<br/>
+Round a floating point number "num" off to the closest integer, down to the greatest integer that is less than "num," and up to the least integer that is greater than or equal to "num," respectively. The result is DOUBLE. They round a number away from 0, toward negative infinity, and toward positive infinity, respectively. Accordingly, if "num" is negative, the results are equal to -ROUND(abs(num)), -CEIL(abs(num)), and -FLOOR(abs(num)), respectively, where abs(num) is the absolute value of "num."
+
+<p>
+The table below shows operation examples.
+</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup><col class="right" /><col class="right" /><col class="right" /><col class="right" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="right">Value</th><th scope="col" class="right">ROUND</th><th scope="col" class="right">FLOOR</th><th scope="col" class="right">CEILING</th></tr>
+</thead>
+<tbody>
+<tr><td class="right">1.34</td><td class="right">1.0</td><td class="right">1.0</td><td class="right">2.0</td></tr>
+<tr><td class="right">3.67</td><td class="right">4.0</td><td class="right">3.0</td><td class="right">4.0</td></tr>
+<tr><td class="right">-0.23</td><td class="right">0.0</td><td class="right">-1.0</td><td class="right">-0.0</td></tr>
+<tr><td class="right">-3.89</td><td class="right">-4.0</td><td class="right">-4.0</td><td class="right">-3.0</td></tr>
+</tbody>
+</table>
+
+
+<p>
+If you specify +0, -0, an integer, NaN, INF, or -INF as a parameter, they return the same value as the specified value.
+</p>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-7" class="outline-4">
+<h4 id="sec-3-2-7"><span class="section-number-4">3.2.7</span> Time-Type Operations</h4>
+<div class="outline-text-4" id="text-3-2-7">
+
+
+<ul>
+<li id="sec-3-2-7-1">NOW()<br/>
+Returns the current date and time. It returns the constant result during a single query transaction.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-7-2">TIMESTAMP(str)<br/>
+Returns a TIMESTAMP result converted from a timestamp expression.
+
+<p>
+The following format based on the Western calendar and UTC is only supported as a timestamp expression.
+</p>
+
+
+<pre class="example">YYYY-MM-DDThh:mm:ss.SSSZ
+</pre>
+
+<p>
+".SSS" can be omitted. In the format above, alphabetical characters stand for decimal integers, as follows:
+</p><ul>
+<li>YYYY: Year. Four digits or more.
+</li>
+<li>MM: Month. Must be two digits, from 1 to 12.
+</li>
+<li>DD: Date. Must be two digits, from 1 to 31. If any other number is specified, it will not be accepted. Acceptable numbers depend on the month and the year.
+</li>
+<li>hh: Hours in 24-hour format. Must be two digits, from 0 to 23.
+</li>
+<li>mm: Minutes. Must be two digits, from 0 to 59.
+</li>
+<li>ss: Seconds. Must be two digits, from 0 to 59.
+</li>
+<li>SSS: Milliseconds. Must be three digits, from 0 to 999.
+</li>
+</ul>
+
+<p>Refer to the Annex <a href="#sec-7-1">Range of values</a> for the display range.
+</p>
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-7-3">TIMESTAMPADD(YEAR|MONTH|DAY|HOUR|MINUTE|SECOND|MILLISECOND, timestamp, duration)<br/>
+Returns the result of adding the specified number ("duration") of designated intervals (first parameter) to the specified "timestamp" value. Specify a numeric value as "duration." If a negative value is specified as "duration," it returns the time earlier than the specified time. The current version uses the UTC timezone for calculation.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-7-4">TIMESTAMPDIFF(YEAR|MONTH|DAY|HOUR|MINUTE|SECOND|MILLISECOND, timestamp1, timestamp2)<br/>
+Return the difference between two given timestamps for the designate interval (first parameter). The value returned is a numeric value. The current version uses the UTC timezone for calculation.
+
+<p>
+Example) Selecting tickets with three or more days of validity period among a list of tickets (tickets).
+</p>
+
+
+<pre class="example">SELECT * FROM tickets WHERE TIMESTAMPDIFF(DAY, expired, issued) &gt;= 3
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-7-5">TO_TIMESTAMP_MS(num)<br/>
+Convert to a TIMESTAMP corresponding to the num in milliseconds of the time 1970-01-01T00:00:00Z. An error occurs if num is a floating-point number. In addition, an error occurs if the conversion results cannot be expressed as time data e.g. negative values or extremely large values, etc. As a result, if a query using this function on a numerical column is issued, an error occurs if the conversion results contain values that cannot be expressed as time data in the column value. For example, an error occurs if the container contains a row with a num=-1 in the query below.
+
+
+
+<pre class="example">SELECT * WHERE TO_TIMESTAMP_MS(num) &gt; TIMESTAMP('2011-01-01T00:00:00Z')
+</pre>
+
+
+<p>
+In such a situation, avoid such errors by using the TO_EPOCH_MS function as shown below to evaluate only the value in which the converted numerical data serves as the range of the time series data.
+</p>
+
+
+<pre class="example">SELECT * WHERE num &lt; TO_EPOCH_MS(TIMESTAMP('9999-12-31T23:59:59.999Z')) AND num &gt;= 0 AND TO_TIMESTAMP_MS(num) &gt; TIMESTAMP('2011-01-01T00:00:00Z')
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-7-6">TO_EPOCH_MS(timestamp)<br/>
+For time series value specified in a timestamp, the time passed in milliseconds starting from the time 1970-01-01T00:00:00Z is converted to a LONG value. An error occurs if a value which is not a time series data is specified. This function is the inverted conversion of the TO_TIMESTAMP_MS function.
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-8" class="outline-4">
+<h4 id="sec-3-2-8"><span class="section-number-4">3.2.8</span> Array-Type Operations</h4>
+<div class="outline-text-4" id="text-3-2-8">
+
+
+<ul>
+<li id="sec-3-2-8-1">ARRAY_LENGTH(array)<br/>
+Returns the length of the specified array.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-8-2">ELEMENT(n, array)<br/>
+Extracts an array element at the specified position. An array of length 1 or more must be specified. The parameter "n" is the number indicating the element position, starting from 0. If "n" is Floating point type or a negative value or longer than the length of "array," or if the length of "array" is 0, an error is returned. Accordingly, if different lengths of arrays are contained in a Collection, and if a query specifying an array element as below cannot extract the specified array element, an error can be returned.
+
+
+
+<pre class="example">SELECT * FROM arrays WHERE ELEMENT(1, array) = 1
+</pre>
+
+
+<p>
+Rewrite such a query to prevent the ELEMENT function from being evaluated, as below:
+</p>
+
+
+<pre class="example">SELECT * FROM arrays WHERE ARRAY_LENGTH(array)&gt;= 1 AND ELEMENT(1, array) = 1
+</pre>
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-2-9" class="outline-4">
+<h4 id="sec-3-2-9"><span class="section-number-4">3.2.9</span> Spatial-Type Operations</h4>
+<div class="outline-text-4" id="text-3-2-9">
+
+
+<p>
+Spatial-Type data are widely used in the GIS field, such as OpenGIS.
+In TQL, it manages the two or three-dimensional spatial structure, and provides generating function and judgment function.
+</p>
+<ul>
+<li id="sec-3-2-9-1">ST_GeomFromText(text)<br/>
+Generates a spatial-type data from a string of WKT representation.
+
+<p>
+The WKT is a standard for representing the spatial structure as a string.
+In TQL, it supports only the following structure.
+</p><ul>
+<li>POINT: Point represented by two or three-dimensional coordinate.
+</li>
+<li>LINESTRING: Set of straight lines in two or three-dimensional space represented by two or more points.
+</li>
+<li>POLYGON: Closed area in two or three-dimensional space represented by a set of straight lines.
+</li>
+<li>POLYHEDRALSURFACE: Area in the three-dimensional space represented by a set of the specified area.
+</li>
+<li>QUADRATICSURFACE: two-dimensional curved surface in a three-dimensional space represented by defining equation f(X) = &lt;AX, X&gt; + BX + c.
+</li>
+</ul>
+
+
+<p>
+However, it can not include the infinity or non-numeric numbers as a number that make up the coordinates.
+In addition, it can not give unsupported spatial structures.
+</p>
+<p>
+In the case of the rectangle having a diagonal line connecting points (0, 0) and (10, 10) on the two-dimensional space will be expressed as follows.
+</p>
+
+
+<pre class="example">POLYGON((0 0,10 0,10 10,0 10,0 0))
+</pre>
+
+
+<p>
+In addition, it can express the value that does not correspond with a particular spatial range called the empty geometry for each type of spatial structure data type.
+Express "EMPTY" instead of the coordinate values as the following example.
+</p>
+
+
+<pre class="example">LINESTRING(EMPTY)
+</pre>
+
+
+<p>
+In addition, you can specify the SRID by describing the integer after ";".
+In the following example, it indicates the rectangle is in the coordinate system of SRID:4326.
+</p>
+
+
+<pre class="example">POLYGON((0 0,10 0,10 10,0 10,0 0);4326)
+</pre>
+
+<p>
+However, it does not correspond to coordinate range limit by the coordinate system represented by this SRID or the coordinate transformation by changing the SRID.
+If you do not specify a SRID, it is set to -1 as an invalid SRID.
+</p>
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-2">ST_MakeRect(p1, p2)<br/>
+Generate a rectangle having a diagonal line connecting points p1 and p2 on the two-dimensional space.
+If p1 is equal to p2 or any of the y-coordinate or x-coordinate of p1 and p2 is equal, the result will be an error because it can not form a rectangle.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-3">ST_MakeRect(x1, y1, x2, y2)<br/>
+Generate a rectangle having a diagonal line connecting points (x1, y1) and (x2, y2) on the two-dimensional space.
+If x1 is equal to x2 or y1 is equal to y2, the result will be an error because it can not form a rectangle.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-4">ST_MakeBox(p1, p2)<br/>
+Generate a rectangular parallelepiped having a diagonal line connecting points p1 and p2 in the three-dimensional space.
+If p1 is equal to p2 or any of the coordinate y, x and z of p1 and p2 is equal, the result will be an error because it can not form a rectangular parallelepiped.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-5">ST_MakeBox(x1, y1, z1, x2, y2, z2)<br/>
+Generate a rectangular parallelepiped having a diagonal line connecting points (x1, y1, z1) and (x2, y2, z2) in the three-dimensional space.
+If x1 is equal to x2, y1 is equal to y2 or z1 is equal to z2, the result will be an error because it can not form a rectangle parallelepiped.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-6">ST_MakePlane(p0x, p0y, p0z, vx, vy, vz)<br/>
+Generate a plane from the normal vector v and point p0 in the three-dimensional space.
+If the length of v is zero, it generate an undefined plane. This undefined plane does not intersect with any kind of spatial structure.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-7">ST_MakeCone(p0x, p0y, p0z, vx, vy, vz, deg)<br/>
+Generate a cone from the angle deg of the axis and the bus, point p0 and vector v of the axis in the three-dimensional space.
+Units of angle deg is a degree. An error occurs, if the length of v is 0.
+Even if deg is not in the range from 0 to 90, it generates a cone with the remainder of dividing by 360 deg taking into account the reverse vector of the axis.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-8">ST_MakeSphere(p0x, p0y, p0z, r)<br/>
+Generate a sphere from the point p0 and the radius r in the three-dimensional space
+An error occurs, if r is zero or negative value.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-9">ST_MakeCylinder(p0x, p0y, p0z, vx, vy, vz, r)<br/>
+Generate a cylinder from the point p0, vector v of the axis and the radius r in the three-dimensional space.
+An error occurs, if the length of v is zero.
+If r is 0, it will be a straight line. If r is a negative value, it will be the same as when specifying -r.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-10">ST_MakeQSF(A00, A01, A02, A10, A11, A12, A20, A21, A22, B0, B1, B2, c)<br/>
+Generate a quadratic surface in the three-dimensional space represented by definition equation f(X) = &lt;AX, X&gt; + BX + c.
+It does not determine whether the definition formula is completed as a two-dimensional curved surface.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-11">ST_MBRIntersects(g1, g2)<br/>
+Determine whether the "Minimum Bounding Box" of the each spatial ranges intersect. It returns TRUE only if they intersect.
+"intersect" means "there is a common region to the two regions."
+
+<p>
+Both g1 and g2 cannot be specified quadratic surface (QUADRATICSURFACE).
+In addition, for POLYHEDRALSURFACE, the result will be undefined if specified the shapes other than rectangular parallelepipeds, the combination of POLYGON which do not share a side each other and the shape which is not closed as a spatial structure.
+</p>
+<p>
+It use only x and y coordinates excluding z coordinate as a decision object when one is two-dimensional spatial structure consisting of x and y coordinate and the other is three-dimensional spatial structure consisting of x, y and z coordinates.
+For example, the result of intersection determination of POINT (x0 y0) and LINESTRING (x1 y1 z1, x2 y2 z2) is true only if x1 &lt;= x0 &lt;= x2 and y1 &lt;= y0 &lt;= y2 are completed.
+</p>
+<p>
+FALSE is always returned if either one or both is an empty geometry.
+</p>
+<p>
+Circumscribed rectangular parallelepiped is defined according to the type of structure as follows.
+</p><ul>
+<li>POINT:: Rectangular parallelepiped whose all vertices located on the same and length of each side is 0. If the structure is two-dimensional, the range of z coordinates of a rectangular parallelepiped is treated as (-∞, ∞).
+</li>
+<li>LINESTRING, POLYGON, POLYHEDRALSURFACE: Rectangular parallelepiped consisting of the minimum and maximum value of x, y and z coordinates of the points which make up the structure. If the structure is two-dimensional, the range of z coordinates of a rectangular parallelepiped is treated as (-∞, ∞).
+</li>
+</ul>
+
+
+<p>
+Example) Selecting a Row such as spatial-type data on the column geom and the specified rectangular range intersect.
+</p>
+
+
+<pre class="example">SELECT * WHERE ST_MBRIntersects(geom, ST_GeomFromText('POLYGON((0 0,10 0,10 10,0 10,0 0))'))
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-12">ST_QSFMBRIntersects(q, g)<br/>
+Determine whether the quadratic curved surface q and the circumscribed rectangular parallelepiped of spatial structure g other than two-dimensional curved intersect. It returns TRUE only if they intersect.
+It can not give other than quadratic curved surface to q and a quadratic curved surface to g.
+Also, it can not give a two-dimensional spatial structure to g.
+The condition of other determination of intersecting are the same as ST_MBRIntersects.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-2-9-13">ST_GetSrId(g)<br/>
+Returns the SRID of the spatial structure g. If g does not have a SRID, it returns an invalid SRID (-1).
+
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3-3" class="outline-3">
+<h3 id="sec-3-3"><span class="section-number-3">3.3</span> Selection Expressions</h3>
+<div class="outline-text-3" id="text-3-3">
+
+
+
+</div>
+
+<div id="outline-container-3-3-1" class="outline-4">
+<h4 id="sec-3-3-1"><span class="section-number-4">3.3.1</span> Basic Syntax</h4>
+<div class="outline-text-4" id="text-3-3-1">
+
+<p>This section defines the selection expressions to specify target Column(s), a calculation formula, etc. Only the Rows satisfying the conditions specified in the FROM and WHERE clauses are to be processed.
+</p>
+<ul>
+<li id="sec-3-3-1-1">*<br/>
+Selects all the Rows satisfying the specified condition(s). By designating a ORDER BY section (to be described later), the data can be sorted by column value.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-1-2">(Operation function)<br/>
+Any one of operation functions described in the following sections is available for aggregation, selection and other operations.
+If an overflow occurs in an internal operation, -INF or INF is returned for floating point operation, and the value "undefined" is returned for integer operation. And if NaN is given as an operand for floating-point operation, NaN is returned.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-3-2" class="outline-4">
+<h4 id="sec-3-3-2"><span class="section-number-4">3.3.2</span> Aggregation Operations - General</h4>
+<div class="outline-text-4" id="text-3-3-2">
+
+<p>Here are described the aggregation operations which can be applied to a set of any Rows.
+</p>
+<p>
+If no target field is found, the number of results returned is 0, except for the functions COUNT and SUM shown below. Otherwise, the number of results returned is always 1.
+</p>
+<p>
+If the value of the specified column is NULL, it will not get evaluated unless otherwise noted.
+</p>
+<ul>
+<li id="sec-3-3-2-1">MAX(column)<br/>
+Returns the largest value in the specified Column. Only a numeric or time-type Column can be specified. The type of a returned value is the same as that of the specified Column.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-2-2">MIN(column)<br/>
+Returns the smallest value in the specified Column. Only a numeric or time-type Column can be specified. The type of a returned value is the same as that of the specified Column.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-2-3">COUNT(*)<br/>
+Return the number of Rows satisfying a given condition(s). A Column cannot be specified. The type of a returned value is always If there is not a single row that can serve as a LONG. target, the value of the operation result is 0. It also evaluates row containing NULL value.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-2-4">SUM(column)<br/>
+Return the sum of values in the specified Column. Only a numeric-type Column can be specified. The type of a returned value is LONG if the specified Column is of integer type, and DOUBLE if it is of floating-point type.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-2-5">AVG(column)<br/>
+Returns the average value of the specified Column. Only a numeric-type Column can be specified. The type of a returned value is always DOUBLE.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-2-6">VARIANCE(column)<br/>
+Returns the variance of values in the specified Column. Only a numeric-type Column can be specified. The type of a returned value is always DOUBLE.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-2-7">STDDEV(column)<br/>
+Returns the standard deviation of values in the specified Column. Only a numeric-type Column can be specified. The type of a returned value is always DOUBLE.
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-3-3" class="outline-4">
+<h4 id="sec-3-3-3"><span class="section-number-4">3.3.3</span> Aggregation Operations - Time Series</h4>
+<div class="outline-text-4" id="text-3-3-3">
+
+<p>Here are described the aggregation operations which can be applied to a set of Rows in a TimeSeries.
+</p>
+<p>
+In aggregation operation weighted by a time-type key, for each Row satisfying a condition, a weighted value is obtained by calculating half the time span between the adjacent Rows before and after the Row in terms of seconds. However, if a Row has only one adjacent Row, the time span from the adjacent Row is considered, and if no adjacent Rows exist, 1 (sec.) is used as a weighted value.
+</p>
+<p>
+If the value of the specified column is NULL, it will not get evaluated unless otherwise noted.
+</p>
+<ul>
+<li id="sec-3-3-3-1">TIME_AVG(column)<br/>
+Returns the average weighted by a time-type key of values in the specified Column. The type of a returned value is always DOUBLE.
+
+<p>
+The weighted average is calculated by dividing the sum of products of sample values and their respective weighted values by the sum of weighted values. Only a numeric-type Column can be specified. The method for calculating a weighted value is as shown above.
+</p>
+<p>
+Example) Obtaining the time-weighted average voltage at Point 103, plant1 in July 2011.
+</p>
+
+
+<pre class="example">SELECT TIME_AVG(voltage103) FROM plant1
+  WHERE TIMESTAMP('2011-07-01T00:00:00Z') &lt;= timestamp AND timestamp &lt; TIMESTAMP('2011-08-01T00:00:00Z')
+</pre>
+
+
+<p>
+Here, you can see an example of the procedure for calculating a weighted average for the TimeSeries below.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup><col class="left" /><col class="right" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="left">Key (seconds from 00:00:00 on July 1, 2011)</th><th scope="col" class="right">Colum to be aggregated</th></tr>
+</thead>
+<tbody>
+<tr><td class="left">0 sec.</td><td class="right">4</td></tr>
+<tr><td class="left">10 sec.</td><td class="right">3</td></tr>
+<tr><td class="left">20 sec.</td><td class="right">2</td></tr>
+<tr><td class="left">40 sec.</td><td class="right">1</td></tr>
+</tbody>
+</table>
+
+
+<p>
+This TimeSeries is extended as shown in the table below; starting from the left, a midpoint time between adjacent Row values, a weighted value, and a product of a sample value (a Column value) and the weighted value are calculated.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup><col class="left" /><col class="left" /><col class="left" /><col class="left" /><col class="left" /><col class="left" /><col class="left" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="left">Key</th><th scope="col" class="left">Column to be aggregated</th><th scope="col" class="left">Midpoint (seconds)</th><th scope="col" class="left">Time span from (previous) midpoint</th><th scope="col" class="left">Time span from (following) midpoint</th><th scope="col" class="left">Weighted value</th><th scope="col" class="left">Product of sample and weighted values</th></tr>
+</thead>
+<tbody>
+<tr><td class="left">0 sec.</td><td class="left">4</td><td class="left">-</td><td class="left">-</td><td class="left">5 (=5-0)</td><td class="left">5</td><td class="left">20 (=4*5)</td></tr>
+<tr><td class="left">(Midpoint)</td><td class="left">-</td><td class="left">5 sec.(=(0+10)/2)</td><td class="left">-</td><td class="left">-</td><td class="left">-</td><td class="left">-</td></tr>
+<tr><td class="left">10 sec.</td><td class="left">3</td><td class="left">-</td><td class="left">5 (=10-5)</td><td class="left">5 (=15-10)</td><td class="left">10 (=5+5)</td><td class="left">30 (=3*10)</td></tr>
+<tr><td class="left">(Midpoint)</td><td class="left">-</td><td class="left">15 sec.(=(10+20)/2)</td><td class="left">-</td><td class="left">-</td><td class="left">-</td><td class="left">-</td></tr>
+<tr><td class="left">20 sec.</td><td class="left">2</td><td class="left">-</td><td class="left">5 (=20-15)</td><td class="left">10 (=30-20)</td><td class="left">15 (=5+10)</td><td class="left">30 (=2*15)</td></tr>
+<tr><td class="left">(Midpoint)</td><td class="left">-</td><td class="left">30 sec.(=(20+40)/2)</td><td class="left">-</td><td class="left">-</td><td class="left">-</td><td class="left">-</td></tr>
+<tr><td class="left">40 sec.</td><td class="left">1</td><td class="left">-</td><td class="left">10 (=40-30)</td><td class="left">-</td><td class="left">10</td><td class="left">10 (=1*10)</td></tr>
+</tbody>
+</table>
+
+
+<p>
+Finally, all the products of sample values and their respective weighted values and all the weighted values are added up respectively, and then the quotient of both the sums is calculated. In the case of this TimeSeries, it is calculated as: (20+30+30+10)/(5+10+15+10) =90/40=2.25. This procedure is not necessarily the same as that for internal operations in GridDB.
+</p>
+<p>
+The normal unweighted average is calculated as: (4+3+2+1)/4=10/4=2.5.
+</p>
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-3-4" class="outline-4">
+<h4 id="sec-3-3-4"><span class="section-number-4">3.3.4</span> Selection and Interpolation Operations on Time-Series Data</h4>
+<div class="outline-text-4" id="text-3-3-4">
+
+
+<ul>
+<li id="sec-3-3-4-1">TIME_NEXT(*, timestamp)<br/>
+Selects a time-series Row whose timestamp is identical with or just after the specified timestamp.
+
+<p>
+Example) Obtaining the temperature at plant1 at the beginning of July 2011.
+</p>
+
+
+<pre class="example">SELECT TIME_NEXT(*, TIMESTAMP('2011-07-01T00:00:00Z')) FROM plant1
+</pre>
+
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-4-2">TIME_NEXT_ONLY(*, timestamp)<br/>
+Select a time-series Row whose timestamp is just after the specified timestamp.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-4-3">TIME_PREV(*, timestamp)<br/>
+Selects a time-series Row whose timestamp is identical with or just before the specified timestamp.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-4-4">TIME_PREV_ONLY(*, timestamp)<br/>
+Selects a time-series Row whose timestamp is just before the specified timestamp.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-4-5">TIME_INTERPOLATED(column, timestamp)<br/>
+Returns a specified Column value of the time-series Row whose timestamp is identical with the specified timestamp, or a value obtained by linearly interpolating specified Column values of adjacent Rows whose timestamps are just before and after the specified timestamp, respectively. NULL is set if NULL is found in either of the previous or the next timestamp of the specified column value.
+
+<p>
+If no Row with the same timestamp nor no Row with an earlier or later timestamp is found, an intended Row is not generated and the number of Rows returned is 0. Only a numeric-type Column can be specified. The field values of the Row with the latest timestamp among those with the timestamp identical with or earlier than the specified timestamp are set on the specified Column and the fields other than a key.
+</p>
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-4-6">TIME_SAMPLING(*|column, timestamp_start, timestamp_end, interval, DAY|HOUR|MINUTE|SECOND|MILLISECOND)<br/>
+Takes a sampling of Rows in a specific range from a given start time to a given end time.
+
+<p>
+Each sampling time point is defined by adding a sampling interval multiplied by a non-negative integer to the start time, excluding the time points later than the end time.
+</p>
+<p>
+If there is a Row whose timestamp is identical with each sampling time point, the values of the Row are used. Otherwise, interpolated values are used. Row field values in the specified Column to be interpolated are obtained by linearly interpolating the values of the Rows just before and after a sampling time point. NULL is set if NULL is found in either of the previous or the next timestamp of the specified column value. For other fields, the values of the Row with the latest timestamp among those with earlier timestamps than a sampling time point are used as interpolated values. Columns to be linearly interpolated must be of numeric type. If "*" is specified instead of a specific Column name, the latter method of interpolation is applied to all field.
+</p>
+<p>
+If there is no Rows to be referenced for interpolation at a specific sampling time point, a corresponding Row is not generated, and thus the number of results returned is reduced by the number of such time points. A shorter sampling interval increases the likelihood that identical Row field values will be used for the Columns with no need for linear interpolation even at different sampling time points. The sampling interval parameter "interval" must be a positive value.
+</p>
+<p>
+Example) Obtaining hourly voltage information at Point 103, plant1 on July 1, 2011.
+</p>
+
+
+<pre class="example">SELECT TIME_SAMPLING(
+  voltage103, TIMESTAMP('2011-07-01T00:00:00Z'), TIMESTAMP('2011-07-02T00:00:00Z'), 1, HOUR) FROM plant1
+</pre>
+
+
+<p>
+In addition, regarding this sampling result, the ORDER BY section (to be described later) can be described and sorted in column sequence.
+Example) Determine the hourly voltage at Plant 1, Point 103 on July 1, 2011 and sort the data in voltage sequence.
+</p>
+
+
+<pre class="example">SELECT TIME_SAMPLING(
+  voltage103, TIMESTAMP('2011-07-01T00:00:00Z'), TIMESTAMP('2011-07-02T00:00:00Z'), 1, HOUR) FROM plant1 ORDER BY voltage103
+</pre>
+
+
+</li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-3-3-5" class="outline-4">
+<h4 id="sec-3-3-5"><span class="section-number-4">3.3.5</span> Row group selection operation with the maximum value/minimum value</h4>
+<div class="outline-text-4" id="text-3-3-5">
+
+<p>Return any row group that has either the maximum or minimum specified column value.
+</p>
+<p>
+If the value of the specified column is NULL, it will not get evaluated unless otherwise noted.
+</p>
+<ul>
+<li id="sec-3-3-5-1">MAX_ROWS(column)<br/>
+Find the row group with the maximum specified column value. Only numerical or time series columns can be specified.
+
+</li>
+</ul>
+<ul>
+<li id="sec-3-3-5-2">MIN_ROWS(column)<br/>
+Find the row group with the minimum specified column value. Only numerical or time series columns can be specified.
+
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3-4" class="outline-3">
+<h3 id="sec-3-4"><span class="section-number-3">3.4</span> Sorting of search results (ORDER BY)</h3>
+<div class="outline-text-3" id="text-3-4">
+
+<p>The sorting sequence of the search results can be specified by the description in the ORDER BY section.
+The description in the ORDER BY section is defined as follows.
+</p>
+
+
+<pre class="example">ORDER BY (Column name) [ASC|DESC] [, (Column name) [ASC|DESC]]*
+</pre>
+
+<p>
+However, an '*' means that the previous component is repeated 0 or more times.
+</p>
+<p>
+ASC means to sort in ascending order and DES means to sort in descending order. If the sorting sequence is not specified, it will remain as ascendant.
+If multiple sorting conditions are specified, the results will be sorted in order starting from the top-most condition.
+NULL is sorted as the max value.
+</p>
+<p>
+Example) Conduct a search with a in descending order as the first sorting condition, b in ascending order as the second sorting condition, and c in ascending order as the third sorting condition.
+</p>
+
+
+<pre class="example">SELECT * ORDER BY a DESC, b ASC, c
+</pre>
+
+
+<p>
+Unlike SQL, functions and formulas cannot be specified in the sorting conditions.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-5" class="outline-3">
+<h3 id="sec-3-5"><span class="section-number-3">3.5</span> Number of search results found, relative position specification (LIMIT, OFFSET)</h3>
+<div class="outline-text-3" id="text-3-5">
+
+<p>The number of search results found can be limited by the description stated in the LIMIT section.
+In addition, the start position for locating the search results can be specified by the OFFSET.
+The syntax of the LIMIT and OFFSET specifications are defined as follows.
+</p>
+
+
+<pre class="example">LIMIT (number) [OFFSET (number)]
+</pre>
+
+
+<p>
+OFFSET is always used together with LIMIT. If omitted, the meaning is the same as OFFSET 0.
+Negative values and floating point decimals cannot be specified for the LIMIT and OFFSET figures.
+</p>
+<p>
+Formulas and functions cannot be specified for the LIMIT and OFFSET figures.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-6" class="outline-3">
+<h3 id="sec-3-6"><span class="section-number-3">3.6</span> Obtaining Execution Plans and Analyzing Execution Results</h3>
+<div class="outline-text-3" id="text-3-6">
+
+
+<p>
+You can obtain execution plan information and analysis information on execution results by adding EXPLAIN or EXPLAIN ANALYZE before a SELECT statement.
+</p>
+<p>
+A obtained result set is composed of an array of entries with the same structure as a Row. The table below shows the elements of an entry.
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup><col class="left" /><col class="left" /><col class="left" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="left">Name</th><th scope="col" class="left">Type</th><th scope="col" class="left">Description</th></tr>
+</thead>
+<tbody>
+<tr><td class="left">ID</td><td class="left">INTEGER</td><td class="left">An ID indicating the position of an entry in an array of entries.</td></tr>
+<tr><td class="left">DEPTH</td><td class="left">INTEGER</td><td class="left">Indicates a depth for representing the relation with other entries. If there is found an entry whose depth is smaller than that of a target entry by one, through checking entries one by one whose IDs are smaller than that of the target entry, it means that the target entry describes the content of the found entry in more detail.</td></tr>
+<tr><td class="left">TYPE</td><td class="left">STRING</td><td class="left">Indicates classification of information indicated by an entry; namely, classification of analysis results, such as execution time, classification of components of a query plan, etc.</td></tr>
+<tr><td class="left">VALUE_TYPE</td><td class="left">STRING</td><td class="left">Indicates the type of a value assigned to the information indicated by an entry. The type of a value assigned to execution time or other analysis results, for example, is returned. Type names are the same as the primitive types defined in TQL. An empty string is set if no value is assigned.</td></tr>
+<tr><td class="left">VALUE</td><td class="left">STRING</td><td class="left">Indicates a character string representing a value assigned to the information indicated by an entry. An empty string is set as VALUE if no value is assigned.</td></tr>
+<tr><td class="left">STATEMENT</td><td class="left">STRING</td><td class="left">Returns a part of a TQL statement corresponding to the information indicated by an entry. An empty string is set if no correspondence is found.</td></tr>
+</tbody>
+</table>
+
+
+
+</div>
+
+<div id="outline-container-3-6-1" class="outline-4">
+<h4 id="sec-3-6-1"><span class="section-number-4">3.6.1</span> EXPLAIN</h4>
+<div class="outline-text-4" id="text-3-6-1">
+
+<p>EXPLAIN is placed before a SELECT statement to obtain execution plan information about the SELECT statement. The SELECT statement itself will not be executed.
+</p>
+<p>
+Even a single identical query might return different results depending on the indexing settings or other conditions.
+</p>
+</div>
+
+</div>
+
+<div id="outline-container-3-6-2" class="outline-4">
+<h4 id="sec-3-6-2"><span class="section-number-4">3.6.2</span> EXPLAIN ANALYZE</h4>
+<div class="outline-text-4" id="text-3-6-2">
+
+<p>EXPLAIN ANALYZE is placed before a SELECT statement to execute the SELECT statement and obtain analysis information, such as execution time, as well as obtain execution plan information about the SELECT statement.
+</p>
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Trigger function</h2>
+<div class="outline-text-2" id="text-4">
+
+
+<p>
+When an update operation (row registration/update, deletion) is carried out on a container with a set trigger, a notification can be sent using the Java Messaging Service (JMS) or REST.
+The former is known as a JMS notification while the latter is known as a REST notification.
+</p>
+
+</div>
+
+<div id="outline-container-4-1" class="outline-3">
+<h3 id="sec-4-1"><span class="section-number-3">4.1</span> Functional overview</h3>
+<div class="outline-text-3" id="text-4-1">
+
+
+<ul>
+<li>API operations
+<ul>
+<li>The 3 functions that can be carried out with the API are trigger setting, trigger release, and get trigger information.
+</li>
+</ul>
+
+</li>
+<li>Notification timing
+<ul>
+<li>A notification is sent when a new row is created, updated or deleted.
+</li>
+<li>The system will not wait for the replication to end first. In addition, if the mode is not the auto commit mode, a notification is sent in a non-committed state.
+</li>
+</ul>
+
+</li>
+<li>Notification contents
+<ul>
+<li>The container name and type of operation (creation of a new row or update and deletion) are notified.
+</li>
+<li>If a column subject to notification is specified, the value of the specified column of the row operated on is also notified together.
+</li>
+</ul>
+
+</li>
+<li>Processing when an error occurs
+<ul>
+<li>Error information is recorded in the event log when an error occurs during notification. The information will not be sent again.
+</li>
+</ul>
+
+</li>
+<li>Others
+<ul>
+<li>When multiple rows are newly created or updated together, notification is carried out on an individual row basis. This operation corresponds to invoking a Container#put(java.util.Collection) or GridStore#multiPut(Map) in the case of a Java API.
+</li>
+<li>If the schema of a container with a set trigger is changed, the trigger will be inherited by the container after the change but columns not included in the schema after the change are automatically deleted from the group of column names subject to notification.
+</li>
+<li>Although it is possible to set both the JMS notification and REST notification for the same container, the trigger name needs to be set separately.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-2" class="outline-3">
+<h3 id="sec-4-2"><span class="section-number-3">4.2</span> API overview</h3>
+<div class="outline-text-3" id="text-4-2">
+
+
+<ul>
+<li>Trigger setting
+<ul>
+<li>void Container#createTrigger(TriggerInfo info)
+</li>
+<li>Set the trigger in the container.
+</li>
+<li>Settings that are common to both JMS notifications and REST notifications include the trigger name, notification method, operation subject to monitoring (creation of a new row or update and deletion), column subject to notification, and notification destination URI. In addition, settings that are used only in JMS notifications include the destination name, user name, and password. These information are set via TriggerInfo objects.
+</li>
+<li>The trigger name must be unique for each container.
+</li>
+<li>If a trigger name that has already been set is specified and set, the setting will be overwritten.
+</li>
+<li>The validity of the notification destination URI, destination name, user name and password are not checked during trigger setting.
+</li>
+<li>About JMS notifications
+<ul>
+<li>If the user name and password have not been set yet, the user name and password will not be used in the connection.
+</li>
+<li>The notification mode shall be Session#AUTO_ACKNOWLEDGE while the distribution mode shall be DeliveryMode#PERSISTENT.
+</li>
+</ul>
+
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup><col class="left" /><col class="left" /><col class="left" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="left"></th><th scope="col" class="left">JMS notification</th><th scope="col" class="left">REST notification</th></tr>
+</thead>
+<tbody>
+<tr><td class="left">Trigger name</td><td class="left">✓</td><td class="left">✓</td></tr>
+<tr><td class="left">Notification method</td><td class="left">✓</td><td class="left">✓</td></tr>
+<tr><td class="left">Update operation subject to monitoring</td><td class="left">✓</td><td class="left">✓</td></tr>
+<tr><td class="left">Notification target column</td><td class="left">✓</td><td class="left">✓</td></tr>
+<tr><td class="left">Notification destination URL</td><td class="left">✓</td><td class="left">✓</td></tr>
+<tr><td class="left">Destination type</td><td class="left">✓</td><td class="left"></td></tr>
+<tr><td class="left">Destination name</td><td class="left">✓</td><td class="left"></td></tr>
+<tr><td class="left">User name</td><td class="left">✓</td><td class="left"></td></tr>
+<tr><td class="left">Password</td><td class="left">✓</td><td class="left"></td></tr>
+</tbody>
+</table>
+
+
+<ul>
+<li>Trigger release
+<ul>
+<li>void Container#dropTrigger(String name)
+</li>
+<li>Release the trigger set in the container.
+
+</li>
+</ul>
+
+</li>
+<li>Get trigger information
+<ul>
+<li>List&lt;TriggerInfo&gt; ContainerInfo#getTriggerInfoList()
+</li>
+<li>Get the setting information of the trigger. The ContainerInfo object obtained by executing getContainerInfo() on a Container object is used.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-3" class="outline-3">
+<h3 id="sec-4-3"><span class="section-number-3">4.3</span> Message format</h3>
+<div class="outline-text-3" id="text-4-3">
+
+
+<ul>
+<li>JMS notification
+<ul>
+<li>Transmitting end
+<ul>
+<li>The container name, type of update operation, and row data are set in the properties. No settings will be made in the body.
+</li>
+</ul>
+
+</li>
+<li>Receiving end
+<ul>
+<li>The message type and schema of the row data are assumed to be known.
+</li>
+<li>Get notification contents using a JMS TextMessage. A list of the property names can be obtained with TextMessage#getPropertyNames().
+</li>
+<li>Container name
+<ul>
+<li>Property name is @container. Append a @ in front of the destination so as not to duplicate the column name of the row data.
+</li>
+<li>Get the property name with TextMessage#getStringProperty(). Example: getStringProperty("@container")
+</li>
+</ul>
+
+</li>
+<li>Type of update operation
+<ul>
+<li>Property name is @event. Append a @ in front of the destination so as not to duplicate the column name of the row data. There are 2 types of update operation, "put" and "delete".
+</li>
+<li>Get the property name with TextMessage#getStringProperty(). Example: getStringProperty("@event")
+</li>
+</ul>
+
+</li>
+<li>Row data
+<ul>
+<li>Boolean datatype, integer datatype and floating point decimal datatype is acquired with a TextMessage#getXXXProperty() corresponding to the datatype. Example: FLOAT-type getFloatProperty ("column name")
+</li>
+<li>Set the value converted to the time lapsed (LONG-type data) starting from the time 1970-01-01T00:00:00Z for the time-based data. As a result, return the value acquired by TextMessage#getLongProperty() to the time datatype value at the receiving end.
+</li>
+<li>BLOB datatype and array datatype are acquired with a TextMessage#getStringProperty(). In order to set a blank character string at the transmitting end, make sure the character string is blank.
+</li>
+</ul>
+
+</li>
+</ul>
+
+</li>
+</ul>
+
+</li>
+<li>REST notification
+<ul>
+<li>Transmitting end
+<ul>
+<li>The JSON character string below is set and posted to the body of the HTTP request.
+</li>
+<li>The value of the "row" is set only for the specified column subject to notification. If it is not specified, the "row" itself will not be set.
+</li>
+<li>The value of each column in a "row" shall be as follows.
+<ul>
+<li>Boolean datatype: "true" or "false"
+</li>
+<li>Integer datatype, time datatype: integer
+</li>
+<li>Floating point decimal datatype: floating point decimal
+</li>
+<li>Character string datatype: character string
+</li>
+<li>BLOB datatype and array datatype: blank character string
+</li>
+</ul>
+
+</li>
+<li>If the value of the specified column to be notified is NULL, the "row" itself will not be set.
+</li>
+</ul>
+
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+
+
+
+<pre class="example">*JSON character string
+{
+  "container":"(container name)",
+  "event":"(type of update operation)",
+  "row":{
+    "(column name 0)":"(value of column name 0)",
+    "(column name 1)":"(value of column name 1)",
+    "(column name 2)":"(value of column name 2)",
+    ...
+  }
+}
+</pre>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4-4" class="outline-3">
+<h3 id="sec-4-4"><span class="section-number-3">4.4</span> Precautions</h3>
+<div class="outline-text-3" id="text-4-4">
+
+
+<ul>
+<li>Precautions regarding the trigger setting and update performance
+<ul>
+<li>The update performance drops depending on the number of containers whose triggers are going to be discharged and the number of triggers to discharge. Assign the minimum number of triggers to only containers which require a trigger.
+</li>
+</ul>
+
+</li>
+<li>Precautions regarding the processing performance of the trigger notification destination server
+<ul>
+<li>If the throughput of the notification destination server is very much lower compared to the throughput of the update process in GridDB, trigger processing may fail and an error message may be recorded in the event log. When updating a container with a set trigger at a high frequency, check and adjust the performance of the notification destination server as well.
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> API (Java)</h2>
+<div class="outline-text-2" id="text-5">
+
+
+
+</div>
+
+<div id="outline-container-5-1" class="outline-3">
+<h3 id="sec-5-1"><span class="section-number-3">5.1</span> API List (Java)</h3>
+<div class="outline-text-3" id="text-5-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-2" class="outline-3">
+<h3 id="sec-5-2"><span class="section-number-3">5.2</span> API Samples (Java)</h3>
+<div class="outline-text-3" id="text-5-2">
+
+
+
+</div>
+
+<div id="outline-container-5-2-1" class="outline-4">
+<h4 id="sec-5-2-1"><span class="section-number-4">5.2.1</span> Sample of Collection Operations (Java)</h4>
+<div class="outline-text-4" id="text-5-2-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-2-2" class="outline-4">
+<h4 id="sec-5-2-2"><span class="section-number-4">5.2.2</span> Sample of TimeSeries Operations (Java) - Storage and Extraction of Specific Range</h4>
+<div class="outline-text-4" id="text-5-2-2">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-2-3" class="outline-4">
+<h4 id="sec-5-2-3"><span class="section-number-4">5.2.3</span> Sample of TimeSeries Operations (Java) - Search and Aggregation</h4>
+<div class="outline-text-4" id="text-5-2-3">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-2-4" class="outline-4">
+<h4 id="sec-5-2-4"><span class="section-number-4">5.2.4</span> Sample of Collection Operations (Java) - Schema definition using container information</h4>
+<div class="outline-text-4" id="text-5-2-4">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-5-2-5" class="outline-4">
+<h4 id="sec-5-2-5"><span class="section-number-4">5.2.5</span> Sample of Collection Operations (Java) - Bulk operation on multiple containers</h4>
+<div class="outline-text-4" id="text-5-2-5">
+
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-6" class="outline-2">
+<h2 id="sec-6"><span class="section-number-2">6</span> API (C)</h2>
+<div class="outline-text-2" id="text-6">
+
+
+
+</div>
+
+<div id="outline-container-6-1" class="outline-3">
+<h3 id="sec-6-1"><span class="section-number-3">6.1</span> API List (C)</h3>
+<div class="outline-text-3" id="text-6-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-2" class="outline-3">
+<h3 id="sec-6-2"><span class="section-number-3">6.2</span> API Samples (C)</h3>
+<div class="outline-text-3" id="text-6-2">
+
+
+
+</div>
+
+<div id="outline-container-6-2-1" class="outline-4">
+<h4 id="sec-6-2-1"><span class="section-number-4">6.2.1</span> Sample of Collection Operations (C)</h4>
+<div class="outline-text-4" id="text-6-2-1">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-2-2" class="outline-4">
+<h4 id="sec-6-2-2"><span class="section-number-4">6.2.2</span> Sample of TimeSeries Operations (C) - Storage and Extraction of Specific Range</h4>
+<div class="outline-text-4" id="text-6-2-2">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-2-3" class="outline-4">
+<h4 id="sec-6-2-3"><span class="section-number-4">6.2.3</span> Sample of TimeSeries Operations (C) - Search and Aggregation</h4>
+<div class="outline-text-4" id="text-6-2-3">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-2-4" class="outline-4">
+<h4 id="sec-6-2-4"><span class="section-number-4">6.2.4</span> Sample of Collection Operations (C) - Schema definition using container information</h4>
+<div class="outline-text-4" id="text-6-2-4">
+
+
+</div>
+
+</div>
+
+<div id="outline-container-6-2-5" class="outline-4">
+<h4 id="sec-6-2-5"><span class="section-number-4">6.2.5</span> Sample of Collection Operations (C) - Bulk operation on multiple containers</h4>
+<div class="outline-text-4" id="text-6-2-5">
+
+
+</div>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-7" class="outline-2">
+<h2 id="sec-7"><span class="section-number-2">7</span> Annex</h2>
+<div class="outline-text-2" id="text-7">
+
+
+
+</div>
+
+<div id="outline-container-7-1" class="outline-3">
+<h3 id="sec-7-1"><span class="section-number-3">7.1</span> Range of values</h3>
+<div class="outline-text-3" id="text-7-1">
+
+
+<p>
+Describe the range of values such as the upper limit of the value, etc.
+Refer to the Annex <a href="#sec-7-2">System limiting values</a> for the restriction values of the system.
+</p>
+
+</div>
+
+<div id="outline-container-7-1-1" class="outline-4">
+<h4 id="sec-7-1-1"><span class="section-number-4">7.1.1</span> Values that may be adopted by basic datatypes</h4>
+<div class="outline-text-4" id="text-7-1-1">
+
+<p>The values that may be adopted by the basic datatypes below are as follows.
+</p>
+
+
+<br/>
+
+<table  border="2" cellspacing="0" cellpadding="6" rules="all" frame="all" class="table1">
+<colgroup><col class="left" /><col class="left" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="left">Type</th><th scope="col" class="left">Representable values</th></tr>
+</thead>
+<tbody>
+<tr><td class="left">Boolean (BOOL)</td><td class="left">TRUE/FALSE</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">BYTE</td><td class="left">-2<sup>7</sup> to 2<sup>7</sup>-1</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">SHORT</td><td class="left">-2<sup>15</sup> to 2<sup>15</sup>-1</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">INTEGER</td><td class="left">-2<sup>31</sup> to 2<sup>31</sup>-1</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">LONG</td><td class="left">-2<sup>63</sup> to 2<sup>63</sup>-1</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">FLOAT</td><td class="left">Conforming to IEEE754</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">DOUBLE</td><td class="left">Conforming to IEEE754</td></tr>
+</tbody>
+<tbody>
+<tr><td class="left">TIMESTAMP</td><td class="left">1970/1/1 to 9999/12/31(UTC). Accuracy is in milliseconds. Leap seconds are not handled.</td></tr>
+</tbody>
+</table>
+
+
+
+
+<br/>
+
+<p>
+Value that can be used to TQL operation in spatial (GEOMETRY) type is any arbitrary value returned by the ST_GeomFromText function. Among these values, the value that can be stored containers is excluding the QUADRATICSURFACE structure.
+</p>
+<p>
+The range of values of objects mapped onto the basic types through API may be different from those of the above basic types. The value out of the described range cannot be registered into containers.  But the value may be used in the other operations, such as constructing a search condition. For example, a java.util.Date object to be mapped onto TIMESTAMP by Java API can have a value before the year 1970 that cannot be stored in containers, and the value can be used as a RowKey condition of a RowKeyPredicate object or in a sampling query. However, in that case, it is possible that an error occurs when obtaining rows by the condition.  For the representation range of the object itself to be mapped onto the above basic types, see the definition of the object type.
+</p>
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-7-2" class="outline-3">
+<h3 id="sec-7-2"><span class="section-number-3">7.2</span> System limiting values</h3>
+<div class="outline-text-3" id="text-7-2">
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup><col class="left" /><col class="left" /><col class="left" />
+</colgroup>
+<thead>
+<tr><th scope="col" class="left">Block size</th><th scope="col" class="left">64KB</th><th scope="col" class="left">1MB</th></tr>
+</thead>
+<tbody>
+<tr><td class="left">String data size</td><td class="left">31KB</td><td class="left">128KB</td></tr>
+<tr><td class="left">BLOB data size</td><td class="left">1GB - 1Byte</td><td class="left">1GB - 1Byte</td></tr>
+<tr><td class="left">Array length</td><td class="left">4000</td><td class="left">65000</td></tr>
+<tr><td class="left">No. of columns</td><td class="left">1024</td><td class="left">1024</td></tr>
+<tr><td class="left">Size of container name</td><td class="left">Approximately 16KB</td><td class="left">Approximately 128KB</td></tr>
+<tr><td class="left">Size of column name</td><td class="left">256Byte</td><td class="left">256Byte</td></tr>
+<tr><td class="left">Partition size</td><td class="left">Approximately 64TB</td><td class="left">Approximately 1PB</td></tr>
+<tr><td class="left">Size of cluster name</td><td class="left">64Byte</td><td class="left">64Byte</td></tr>
+<tr><td class="left">Size of trigger name</td><td class="left">256Byte</td><td class="left">256Byte</td></tr>
+<tr><td class="left">URL of trigger</td><td class="left">4KB</td><td class="left">4KB</td></tr>
+<tr><td class="left">No. of affinity groups</td><td class="left">10000</td><td class="left">10000</td></tr>
+<tr><td class="left">Size of data affinity string</td><td class="left">8Byte</td><td class="left">8Byte</td></tr>
+<tr><td class="left">No. of divisions in a timeseries container with a cancellation deadline</td><td class="left">160</td><td class="left">160</td></tr>
+<tr><td class="left">Size of communication buffer managed by a GridStore node</td><td class="left">Approximately 2GB</td><td class="left">Approximately 2GB</td></tr>
+</tbody>
+</table>
+
+
+<ul>
+<li>String, container name, column name, trigger name, URL of trigger
+<ul>
+<li>Limiting value is equivalent to UTF-8 encode
+</li>
+</ul>
+
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-8" class="outline-2">
+<h2 id="sec-8"><span class="section-number-2">8</span> Trademark</h2>
+<div class="outline-text-2" id="text-8">
+
+
+<ul>
+<li>GridDB is a trademark of Toshiba Digital Solutions Corporation.
+</li>
+<li>Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+</li>
+<li>Linux is a trademark of Linus Torvalds.
+</li>
+<li>Other product names are trademarks or registered trademarks of the respective owners.
+
+<p>
+                            Copyright (C) 2017 TOSHIBA Digital Solutions Corporation
+</p></li>
+</ul>
+
+</div>
+</div>
+</div>
+
+<div id="postamble">
+
+
+</div>
+</body>
+</html>
